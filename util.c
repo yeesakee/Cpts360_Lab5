@@ -206,6 +206,17 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
   // WRITE YOUR code here
   // search parent's data block for myino; SAME as search() but by myino
   // copy its name STRING to myname[ ]
+
+   int i; 
+   char *cp, c, sbuf[BLKSIZE], temp[256];
+   DIR *dp;
+   INODE *ip;
+
+   get_block(dev, ip->i_block[0], sbuf);
+   dp = (DIR *)sbuf;
+   cp = sbuf;
+
+
 }
 
 int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
@@ -213,4 +224,13 @@ int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
   // mip points at a DIR minode
   // WRITE your code here: myino = ino of .  return ino of ..
   // all in i_block[0] of this DIR INODE.
+
+  //finds parent number
+
+   char buf[BLKSIZE];
+   // takes block number loads it into buf
+   get_block(dev, mip->INODE.i_block[0], buf);
+
+   
+  
 }

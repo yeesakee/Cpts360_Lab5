@@ -76,20 +76,20 @@ char *rpwd(MINODE *wd)
       return "0";
   }
 
-  //  //from wd->INODE.i_block[0] get my_ino and parent ino
-  //  char buf[BLK];
-  //  get_block(dev, wd->INODE.i_block[0], buf);
+  // from wd->INODE.i_block[0] get my_ino and parent ino
+  // use findino()
+  findino(MINODE *wd, int *parent_ino);
 
-  //   pip = iget(dev, parent_ino);
-  //  // getting parent ino?
-  //  int parent_ino = getino(wd, &ino);
+  int parent_ino = getino(wd, &ino);
 
-  //   //from pip->INODE.i_block[] get my_name string by my_ino as LOCAL
-  //  pip = iget(dev, parent_ino);
+  pip = iget(dev, parent_ino);
 
-  // // recursive call to rpwd(pip) with parent minode
-  // rpwd(pip);
-  // printf("/%s", my_name);
+  // get name use find my name()
+  findmyname(MINODE *parent_minode, int my_ino, char *my_name);
+
+  // recursive call to rpwd(pip) with parent minode
+  rpwd(pip);
+  printf("/%s", my_name);
 }
 
 char *pwd(MINODE *wd)
