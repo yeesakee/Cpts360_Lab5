@@ -212,7 +212,6 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
    int i; 
    char *cp, sbuf[BLKSIZE], temp[256];
    DIR *dp;
-  // INODE *ip;
 
    MINODE *mip = parent;
 
