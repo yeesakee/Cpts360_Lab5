@@ -31,15 +31,42 @@ int cd(char* pathname)
 
 int ls_file(MINODE *mip, char *name)
 {
-  printf("ls_file: to be done: READ textbook!!!!\n");
   // READ Chapter 11.7.3 HOW TO ls
-  printf("%4d", mip->INODE.i_block[0]);
+  char *t1 = "xwrxwrxwr-------";
+  char *t2 = "----------------";
+  char ftime[64];
+  u16 mode = mip->INODE.i_mode;
+  if ((S_ISREG(mode)))
+        printf("%c", '-');
+    if ((S_ISDIR(mode)))
+        printf("%c", 'd');
+    if ((S_ISLNK(mode)))
+        printf("%c", 'l');
+    
+    for (int i=8; i >= 0; i--) {
+        if (mode & (1 << i))
+            printf("%c", t1[i]);
+        else
+            printf("%c", t2[i]);
+    }
+    printf("%4d ", mip->INODE.i_links_count);
+    printf("%4d ", mip->INODE.i_gid);
+    printf("%4d ", mip->INODE.i_uid);
+    printf("%8d ", mip->INODE.i_size);
+
+    strcpy(ftime, ctime(&mip->INODE.i_ctime));
+    ftime[strlen(ftime-1)] = 0;
+    printf("%s ", ftime);
+    printf("%s", basename(name));
+    char linkname[256];
+    if ((S_ISLNK(mode))) {
+        printf(" -> %s", mip->INODE.i_mode);
+    }
 }
 
 int ls_dir(MINODE *mip)
 {
-  printf("ls_dir: list CWD's file names; YOU FINISH IT as ls -l\n");
-
+  printf("IN LS_DIR");
   char buf[BLKSIZE], temp[256];
   DIR *dp;
   char *cp;
@@ -53,19 +80,44 @@ int ls_dir(MINODE *mip)
      temp[dp->name_len] = 0;
      MINODE *mip1 = iget(dev, dp->inode);
      ls_file(mip1, temp);
-	
-     printf("%s  ", temp);
-
+     mip1->dirty = 1;
      cp += dp->rec_len;
      dp = (DIR *)cp;
   }
   printf("\n");
+  return 0;
 }
 
 int ls(char *pathname)
 {
-  printf("ls: list CWD only! YOU FINISH IT for ls pathname\n");
-  ls_dir(running->cwd);
+  // if not given pathname then call ls_dir on current working directory
+  if (strcmp(pathname, "") == 0) {
+    ls_dir(running->cwd);
+  }
+  else {
+    printf("IN ELSE\n");
+    // if INODE cannot be found
+    if (getino(pathname) == -1) {
+      printf("INODE does not exist\n");
+      return -1;
+    }
+    else {
+      // check if path is a directory or file
+      MINODE* mip = iget(dev, getino(pathname));
+      u16 mode = mip->INODE.i_mode;
+      // if INODE is a directory call ls_dir
+      if (S_ISDIR(mode)) {
+        printf("CALLING LS_DIR\n");
+        ls_dir(mip);
+      }
+      else {
+        // otherwise call ls_file
+        printf("CALLING LS_FILE\n");
+        ls_file(mip, pathname);
+      }
+    }
+
+  }
 }
 
 char *rpwd(MINODE *wd)
@@ -76,20 +128,22 @@ char *rpwd(MINODE *wd)
       return "0";
   }
 
-  //  //from wd->INODE.i_block[0] get my_ino and parent ino
-  //  char buf[BLK];
-  //  get_block(dev, wd->INODE.i_block[0], buf);
+   //from wd->INODE.i_block[0] get my_ino and parent ino
+   char buf[BLKSIZE];
+   get_block(dev, wd->INODE.i_block[0], buf);
+   int ino;
+   // getting parent ino?
+   int parent_ino = getino(wd, &ino);
+   MINODE* pip = iget(dev, parent_ino);
+    //from pip->INODE.i_block[] get my_name string by my_ino as LOCAL
+   pip = iget(dev, parent_ino);
+   char name[256];
+   findmyname(pip, ino, name);
+   pip->dirty = 1;
 
-  //   pip = iget(dev, parent_ino);
-  //  // getting parent ino?
-  //  int parent_ino = getino(wd, &ino);
-
-  //   //from pip->INODE.i_block[] get my_name string by my_ino as LOCAL
-  //  pip = iget(dev, parent_ino);
-
-  // // recursive call to rpwd(pip) with parent minode
-  // rpwd(pip);
-  // printf("/%s", my_name);
+  // recursive call to rpwd(pip) with parent minode
+  rpwd(pip);
+  printf("/%s", name);
 }
 
 char *pwd(MINODE *wd)
