@@ -31,42 +31,127 @@ int cd(char* pathname)
 
 int ls_file(MINODE *mip, char *name)
 {
-  printf("ls_file: to be done: READ textbook!!!!\n");
   // READ Chapter 11.7.3 HOW TO ls
-  printf("%4d", mip->INODE.i_block[0]);
+  char *t1 = "xwrxwrxwr-------";
+  char *t2 = "----------------";
+  char ftime[64];
+  u16 mode = mip->INODE.i_mode;
+
+  if ((S_ISREG(mode)))
+        printf("%c", '-');
+    if ((S_ISDIR(mode)))
+        printf("%c", 'd');
+    if ((S_ISLNK(mode)))
+        printf("%c", 'l');
+    
+    for (int i=8; i >= 0; i--) 
+    {
+        if (mode & (1 << i))
+            printf("%c", t1[i]);
+        else
+            printf("%c", t2[i]);
+    }
+    printf("%4d ", mip->INODE.i_links_count);
+    printf("%4d ", mip->INODE.i_gid);
+    printf("%4d ", mip->INODE.i_uid);
+    printf("%8d ", mip->INODE.i_size);
+
+    //strcpy(ftime, ctime(&mip->INODE.i_ctime));
+    time_t time = mip->INODE.i_atime;
+    strcpy(ftime, ctime(&time));
+    ftime[strlen(ftime)-1] = 0;
+    printf("%s ", ftime);
+
+    //printf("%s", basename(name));
+    printf("%s", name);
+
+    //char linkname[256];
+    if ((S_ISLNK(mode))) {
+        //printf(" -> %s", mip->INODE.i_mode);
+        printf(" -> %s", (char *)mip->INODE.i_block);
+    }
+    printf("\n");
+    return 0;
 }
 
 int ls_dir(MINODE *mip)
 {
-  printf("ls_dir: list CWD's file names; YOU FINISH IT as ls -l\n");
+  printf("IN LS_DIR\n");
 
-  char buf[BLKSIZE], temp[256];
+  char buf[BLKSIZE], temp[BLKSIZE];
   DIR *dp;
   char *cp;
+
+  MINODE *mip1;
+
+  u16 mode = mip->INODE.i_mode;
 
   get_block(dev, mip->INODE.i_block[0], buf);
   dp = (DIR *)buf;
   cp = buf;
   
-  while (cp < buf + BLKSIZE){
+  while (cp < buf + BLKSIZE)
+  {
      strncpy(temp, dp->name, dp->name_len);
      temp[dp->name_len] = 0;
-     MINODE *mip1 = iget(dev, dp->inode);
+
+     mip1 = iget(dev, dp->inode);
+
      ls_file(mip1, temp);
-	
-     printf("%s  ", temp);
+     mip1->dirty = 1;
+
+     //iput(mip1);
 
      cp += dp->rec_len;
      dp = (DIR *)cp;
   }
   printf("\n");
+  return 0;
 }
 
 int ls(char *pathname)
 {
-  printf("ls: list CWD only! YOU FINISH IT for ls pathname\n");
-  ls_dir(running->cwd);
+  // int mode;
+   
+  // if not given pathname then call ls_dir on current working directory
+  printf("ls %s\n", pathname);
+
+  if (strcmp(pathname, "") == 0) 
+  {
+      ls_dir(running->cwd);
+  }
+  else 
+  {
+    printf("IN ELSE\n");
+    int ino = getino(pathname);
+    // if INODE cannot be found
+    if (ino == -1) 
+    {
+      printf("INODE does not exist\n");
+      return -1;
+    }
+    else 
+    {
+      //dev = root->dev;
+      // check if path is a directory or file
+      MINODE *mip = iget(dev, ino);
+      //mode = mip->INODE.i_mode;
+      // if INODE is a directory call ls_dir
+     // if (S_ISDIR(mode)) {
+        printf("CALLING LS_DIR\n");
+        ls_dir(mip);
+      }
+      // else {
+      //   // otherwise call ls_file
+      //   printf("CALLING LS_FILE\n");
+      //   ls_file(mip, basename(pathname));
+      // }
+      //iput(mip);
+   }
+   return 0;
 }
+  
+
 
 void *rpwd(MINODE *wd)
 {
