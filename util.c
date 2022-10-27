@@ -210,16 +210,22 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
   //this should be the same as search but return name not node at the end
 
    int i; 
-   char *cp, c, sbuf[BLKSIZE], temp[256];
+   char *cp, sbuf[BLKSIZE], temp[256];
    DIR *dp;
-   INODE *ip;
+  // INODE *ip;
+
+   MINODE *mip = parent;
 
    //rlen = 12
    //search blocks
-   for (i = 0; i <12; i++)
+   for (i = 0; i < 12; i++)
    {
+      if(mip->INODE.i_block[i] == 0)
+      {
+         return -1;
+      }
       // takes block number loads it into buf
-      get_block(dev, ip->i_block[0], sbuf);
+      get_block(mip->dev, mip->INODE.i_block[0], sbuf);
       dp = (DIR *)sbuf;
       cp = sbuf;
       while (cp < sbuf + BLKSIZE)
@@ -231,6 +237,7 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
          {            
             //copy dp->name into myname using length of dp for num characters
             strncpy(myname, dp->name, dp->name_len);
+            //copy name size
             myname[dp->name_len] = 0;
             return 0;
          }
@@ -248,11 +255,19 @@ int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
   // WRITE your code here: myino = ino of .  return ino of ..
   // all in i_block[0] of this DIR INODE.
 
-  //finds parent number
-
    char buf[BLKSIZE];
-   // takes block number loads it into buf
-   get_block(dev, mip->INODE.i_block[0], buf);
+   char *temp;
+   DIR *dp;
+   // takes block number loads it into buf, reads block 
+   get_block(mip->dev, mip->INODE.i_block[0], buf);
+   temp = buf;
+    // use buf to get inode of .
+   dp = (DIR *)buf;
+   *myino = dp->inode;
+   // iterate by length of directory
+   temp += dp->rec_len;
+   //gets inode of ..
+   dp = (DIR *)temp;
+   return dp->inode;
 
-   return 0;
 }
