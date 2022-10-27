@@ -207,16 +207,39 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
   // search parent's data block for myino; SAME as search() but by myino
   // copy its name STRING to myname[ ]
 
+  //this should be the same as search but return name not node at the end
+
    int i; 
    char *cp, c, sbuf[BLKSIZE], temp[256];
    DIR *dp;
    INODE *ip;
 
-   get_block(dev, ip->i_block[0], sbuf);
-   dp = (DIR *)sbuf;
-   cp = sbuf;
-
-
+   //rlen = 12
+   //search blocks
+   for (i = 0; i <12; i++)
+   {
+      // takes block number loads it into buf
+      get_block(dev, ip->i_block[0], sbuf);
+      dp = (DIR *)sbuf;
+      cp = sbuf;
+      while (cp < sbuf + BLKSIZE)
+      {
+         strncpy(temp, dp->name, dp->name_len); // dp->name is NOT a string
+         temp[dp->name_len] = 0;                // temp is a STRING
+         //check if you found the right node
+         if (dp->inode == myino)
+         {            
+            //copy dp->name into myname using length of dp for num characters
+            strncpy(myname, dp->name, dp->name_len);
+            myname[dp->name_len] = 0;
+            return 0;
+         }
+      cp += dp->rec_len;
+      dp = (DIR *)cp;
+      }
+   }
+  
+   return -1;
 }
 
 int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
@@ -231,6 +254,5 @@ int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
    // takes block number loads it into buf
    get_block(dev, mip->INODE.i_block[0], buf);
 
-   
-  
+   return 0;
 }
