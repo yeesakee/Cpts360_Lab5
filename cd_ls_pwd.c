@@ -120,44 +120,48 @@ int ls(char *pathname)
   }
 }
 
-char *rpwd(MINODE *wd)
+void *rpwd(MINODE *wd)
 {
-  printf("pwd: READ HOW TO pwd in textbook!!!!\n");
-  if(wd==root)
+  if(wd == root)
   {
-      return "0";
+      return;
   }
+  int myino;
+  char myname[256];
+  char buf[BLKSIZE];
+  // from wd->INODE.i_block[0] get my_ino and parent ino
+  // use findino()
 
-   //from wd->INODE.i_block[0] get my_ino and parent ino
-   char buf[BLKSIZE];
-   get_block(dev, wd->INODE.i_block[0], buf);
-   int ino;
-   // getting parent ino?
-   int parent_ino = getino(wd, &ino);
-   MINODE* pip = iget(dev, parent_ino);
-    //from pip->INODE.i_block[] get my_name string by my_ino as LOCAL
-   pip = iget(dev, parent_ino);
-   char name[256];
-   findmyname(pip, ino, name);
-   pip->dirty = 1;
+  //takes block number and loads it into buf
+  get_block(dev, wd->INODE.i_block[0], buf);
+
+  //get parent_ino using getino with the myino you got from findino
+  int parent_ino = findino(wd, &myino);
+
+  MINODE *pip = iget(dev, parent_ino);
+
+  // get name use find my name()
+  findmyname(pip, myino, myname);
 
   // recursive call to rpwd(pip) with parent minode
   rpwd(pip);
-  printf("/%s", name);
+  //release minode
+  iput(pip);
+  printf("/%s", myname);
+  return; 
 }
 
 char *pwd(MINODE *wd)
 {
-   
-   if(wd==root)
+   if(wd == root)
    {
-            printf("/\n");
+      printf("/\n");
    }
-   else rpwd(wd);
-
-   //pwd start
-   //pwd(running->cwd);
-
+   else 
+   {
+      rpwd(wd);
+      printf("\n");
+   }
 }
 
 
