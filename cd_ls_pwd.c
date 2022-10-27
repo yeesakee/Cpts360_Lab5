@@ -36,7 +36,6 @@ int ls_file(MINODE *mip, char *name)
   char *t2 = "----------------";
   char ftime[64];
   u16 mode = mip->INODE.i_mode;
-
   if ((S_ISREG(mode)))
         printf("%c", '-');
     if ((S_ISDIR(mode)))
@@ -162,7 +161,6 @@ void *rpwd(MINODE *wd)
   int myino;
   char myname[256];
   char buf[BLKSIZE];
-
   // from wd->INODE.i_block[0] get my_ino and parent ino
   // use findino()
 

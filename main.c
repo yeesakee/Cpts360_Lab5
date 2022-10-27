@@ -66,7 +66,6 @@ int main(int argc, char *argv[ ])
 {
   int ino;
   char buf[BLKSIZE];
-
   printf("checking EXT2 FS ....");
   if ((fd = open(disk, O_RDWR)) < 0){
     printf("open %s failed\n", disk);
@@ -108,19 +107,21 @@ int main(int argc, char *argv[ ])
   // WRTIE code here to create P1 as a USER process
   
   while(1){
+    memset(pathname, 0, sizeof(pathname));
     printf("input command : [ls|cd|pwd|quit] ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
     if (line[0]==0)
        continue;
-    pathname[0] = 0;
+    pathname[0] = '\0';
 
     sscanf(line, "%s %s", cmd, pathname);
     printf("cmd=%s pathname=%s\n", cmd, pathname);
   
-    if (strcmp(cmd, "ls")==0)
-       ls(pathname);
+    if (strcmp(cmd, "ls")==0) {
+      ls(pathname);
+    }
     else if (strcmp(cmd, "cd")==0)
        cd(pathname);
     else if (strcmp(cmd, "pwd")==0)
