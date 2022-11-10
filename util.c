@@ -103,26 +103,37 @@ MINODE *iget(int dev, int ino)
 
 void iput(MINODE *mip)  // iput(): release a minode
 {
- int i, block, offset;
- char buf[BLKSIZE];
- INODE *ip;
+   int i, block, offset, iblock;
+   char buf[BLKSIZE];
+   INODE *ip;
 
- if (mip==0) 
-     return;
+   if (mip==0) 
+      return;
 
- mip->refCount--;
- 
- if (mip->refCount > 0) return;
- if (!mip->dirty)       return;
- 
- /* write INODE back to disk */
- /**************** NOTE ******************************
-  For mountroot, we never MODIFY any loaded INODE
-                 so no need to write it back
-  FOR LATER WROK: MUST write INODE back to disk if refCount==0 && DIRTY
+   mip->refCount--; // decreases refCount by 1
+   
+   if (mip->refCount > 0) return; // still has user 
+   //if (!mip->dirty)       return;
+   if(mip->dirty == 0)    return; // no need to write back
+   
+   /* write INODE back to disk */
+   /**************** NOTE ******************************
+    For mountroot, we never MODIFY any loaded INODE
+                  so no need to write it back
+   FOR LATER WorK: MUST write INODE back to disk if refCount==0 && DIRTY
 
-  Write YOUR code here to write INODE back to disk
- *****************************************************/
+   Write YOUR code here to write INODE back to disk
+   *****************************************************/
+      block = (mip->ino -1) /8 + iblock;
+      offset = (mip->ino - 1) % 8;
+
+      //get block containing this inode
+      get_block(mip->dev, block, buf);
+      ip = (INODE*)buf + offset; // ip points at INODE
+      *ip = mip->INODE; //copy INODE to inode in block
+      put_block(mip->dev, block, buf); //write back to disk
+      
+      idalloc(mip->dev, mip->ino); //mip->refCount = 0
 } 
 
 int search(MINODE *mip, char *name)
