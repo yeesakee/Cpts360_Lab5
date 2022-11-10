@@ -285,8 +285,6 @@ int my_creat(MINODE *pip, char *name)
 
 int creat_file(char *pathname)
 {
-    //INODE.i_mode is set to REG
-
      printf("in creat file\n");
     //int pino;
     //MINODE *pmip;
@@ -329,7 +327,8 @@ int creat_file(char *pathname)
          return -1;
     }
     //basename cannot exist in parent DIR
-    if(!search(pmip, base)) //must return 0
+
+    if(search(pmip, base) != 0) //must return 0
     {
         printf("error basename already exists in parent dir\n");
         return -1; 
