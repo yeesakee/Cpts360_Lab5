@@ -212,7 +212,6 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
    int i; 
    char *cp, sbuf[BLKSIZE], temp[256];
    DIR *dp;
-  // INODE *ip;
 
    MINODE *mip = parent;
 
@@ -270,4 +269,48 @@ int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
    dp = (DIR *)temp;
    return dp->inode;
 
+}
+
+int clr_bit(char *buf, int bit) {
+   buf[bit/8] &= ~(1 << (bit%8));
+}
+
+int incFreeInodes(int dev) {
+   char buf[BLKSIZE];
+   get_block(dev, 1, buf);
+   sp = (SUPER *)buf;
+   sp->s_free_inodes_count++;
+   put_block(dev, 1, buf);
+   get_block(dev, 2, buf);
+   gp = (GD *) buf;
+   gp->bg_free_inodes_count++;
+   put_block(dev, 2, buf);
+}
+
+int idalloc(int dev, int ino) {
+   int i;
+   char buf[BLKSIZE];
+   MTABLE *mp = (MTABLE *)get_mtable(dev);
+   if (ino > mp->ninodes) {
+      printf("inumber %d out of range\n", ino);
+      return;
+   }
+   get_block(dev, mp->imap, buf);
+   clr_bit(buf, ino-1);
+   put_block(dev, mp->imap, buf);
+   incFreeInodes(dev);
+}
+
+int bdalloc(int dev, int bno) {
+   int i;
+   char buf[BLKSIZE];
+   MTABLE *mp = (MTABLE *)get_mtable(dev);
+   if (bno > mp->nblocks) {
+      printf("inumber %d out of range\n", bno);
+      return;
+   }
+   get_block(dev, mp->bmap, buf);
+   clr_bit(buf, bno-1);
+   put_block(dev, mp->bmap, buf);
+   incFreeInodes(dev);
 }

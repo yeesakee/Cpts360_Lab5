@@ -26,7 +26,6 @@ int cd(char* pathname)
    //change cwd to mip
    running->cwd = mip;
    return -1;
-   // READ Chapter 11.7.3 HOW TO chdir
 }
 
 int ls_file(MINODE *mip, char *name)
@@ -43,7 +42,8 @@ int ls_file(MINODE *mip, char *name)
     if ((S_ISLNK(mode)))
         printf("%c", 'l');
     
-    for (int i=8; i >= 0; i--) {
+    for (int i=8; i >= 0; i--) 
+    {
         if (mode & (1 << i))
             printf("%c", t1[i]);
         else
@@ -54,33 +54,50 @@ int ls_file(MINODE *mip, char *name)
     printf("%4d ", mip->INODE.i_uid);
     printf("%8d ", mip->INODE.i_size);
 
-    strcpy(ftime, ctime(&mip->INODE.i_ctime));
-    ftime[strlen(ftime-1)] = 0;
+    //strcpy(ftime, ctime(&mip->INODE.i_ctime));
+    time_t time = mip->INODE.i_atime;
+    strcpy(ftime, ctime(&time));
+    ftime[strlen(ftime)-1] = 0;
     printf("%s ", ftime);
-    printf("%s", basename(name));
-    char linkname[256];
+
+    //printf("%s", basename(name));
+    printf("%s", name);
+
+    //char linkname[256];
     if ((S_ISLNK(mode))) {
-        printf(" -> %s", mip->INODE.i_mode);
+        //printf(" -> %s", mip->INODE.i_mode);
+        printf(" -> %s", (char *)mip->INODE.i_block);
     }
+    printf("\n");
+    return 0;
 }
 
 int ls_dir(MINODE *mip)
 {
-  printf("IN LS_DIR");
-  char buf[BLKSIZE], temp[256];
+  printf("IN LS_DIR\n");
+
+  char buf[BLKSIZE], temp[BLKSIZE];
   DIR *dp;
   char *cp;
+
+  MINODE *mip1;
+
+  u16 mode = mip->INODE.i_mode;
 
   get_block(dev, mip->INODE.i_block[0], buf);
   dp = (DIR *)buf;
   cp = buf;
   
-  while (cp < buf + BLKSIZE){
+  while (cp < buf + BLKSIZE)
+  {
      strncpy(temp, dp->name, dp->name_len);
      temp[dp->name_len] = 0;
-     MINODE *mip1 = iget(dev, dp->inode);
+
+     mip1 = iget(dev, dp->inode);
+
      ls_file(mip1, temp);
      mip1->dirty = 1;
+
      cp += dp->rec_len;
      dp = (DIR *)cp;
   }
@@ -89,37 +106,35 @@ int ls_dir(MINODE *mip)
 }
 
 int ls(char *pathname)
-{
+{ 
   // if not given pathname then call ls_dir on current working directory
-  if (strcmp(pathname, "") == 0) {
-    ls_dir(running->cwd);
+  printf("ls %s\n", pathname);
+
+  if (strcmp(pathname, "") == 0) 
+  {
+      ls_dir(running->cwd);
   }
-  else {
+  else 
+  {
     printf("IN ELSE\n");
+    int ino = getino(pathname);
     // if INODE cannot be found
-    if (getino(pathname) == -1) {
+    if (ino == -1) 
+    {
       printf("INODE does not exist\n");
       return -1;
     }
-    else {
+    else 
+    {
       // check if path is a directory or file
-      MINODE* mip = iget(dev, getino(pathname));
-      u16 mode = mip->INODE.i_mode;
-      // if INODE is a directory call ls_dir
-      if (S_ISDIR(mode)) {
+      MINODE *mip = iget(dev, ino);
         printf("CALLING LS_DIR\n");
         ls_dir(mip);
-      }
-      else {
-        // otherwise call ls_file
-        printf("CALLING LS_FILE\n");
-        ls_file(mip, pathname);
-      }
     }
-
-  }
+   }
+   return 0;
 }
-
+  
 void *rpwd(MINODE *wd)
 {
   if(wd == root)
@@ -131,7 +146,6 @@ void *rpwd(MINODE *wd)
   char buf[BLKSIZE];
   // from wd->INODE.i_block[0] get my_ino and parent ino
   // use findino()
-
   //takes block number and loads it into buf
   get_block(dev, wd->INODE.i_block[0], buf);
 

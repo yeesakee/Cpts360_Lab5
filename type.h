@@ -20,6 +20,7 @@ DIR   *dp;
 #define NMINODE   128
 #define NPROC       2
 
+
 typedef struct minode{
   INODE INODE;           // INODE structure on disk
   int dev, ino;          // (dev, ino) of INODE
@@ -37,3 +38,18 @@ typedef struct proc{
   int          gid;
   MINODE      *cwd;      // CWD directory pointer  
 }PROC;
+
+typedef struct mtable {
+  int dev;
+  int ninodes;
+  int nblocks;
+  int free-blocks;
+  int free_inodes;
+  int bmap;
+  int imap;
+  int iblock;
+  MINODE *mntDirPtr;
+  char DevName[64];
+  char mntName[64];
+}MTABLE;
+

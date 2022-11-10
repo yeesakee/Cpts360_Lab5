@@ -19,6 +19,7 @@ extern MINODE *iget();
 MINODE minode[NMINODE];
 MINODE *root;
 PROC   proc[NPROC], *running;
+MTABLE mountTable[8];
 
 char gpath[128]; // global for tokenized components
 char *name[64];  // assume at most 64 components in pathname
@@ -29,6 +30,7 @@ int  nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128];
 
 #include "cd_ls_pwd.c"
+#include "rmdir.c"
 
 int init()
 {
@@ -58,6 +60,7 @@ int mount_root()
 {  
   printf("mount_root()\n");
   root = iget(dev, 2);
+  
 }
 
 char *disk = "mydisk";     // change this to YOUR virtual
