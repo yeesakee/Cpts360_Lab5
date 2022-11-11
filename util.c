@@ -103,26 +103,37 @@ MINODE *iget(int dev, int ino)
 
 void iput(MINODE *mip)  // iput(): release a minode
 {
- int i, block, offset;
- char buf[BLKSIZE];
- INODE *ip;
+   int i, block, offset, iblock;
+   char buf[BLKSIZE];
+   INODE *ip;
 
- if (mip==0) 
-     return;
+   if (mip==0) 
+      return;
 
- mip->refCount--;
- 
- if (mip->refCount > 0) return;
- if (!mip->dirty)       return;
- 
- /* write INODE back to disk */
- /**************** NOTE ******************************
-  For mountroot, we never MODIFY any loaded INODE
-                 so no need to write it back
-  FOR LATER WROK: MUST write INODE back to disk if refCount==0 && DIRTY
+   mip->refCount--; // decreases refCount by 1
+   
+   if (mip->refCount > 0) return; // still has user 
+   //if (!mip->dirty)       return;
+   if(mip->dirty == 0)    return; // no need to write back
+   
+   /* write INODE back to disk */
+   /**************** NOTE ******************************
+    For mountroot, we never MODIFY any loaded INODE
+                  so no need to write it back
+   FOR LATER WorK: MUST write INODE back to disk if refCount==0 && DIRTY
 
-  Write YOUR code here to write INODE back to disk
- *****************************************************/
+   Write YOUR code here to write INODE back to disk
+   *****************************************************/
+      block = (mip->ino -1) /8 + iblock;
+      offset = (mip->ino - 1) % 8;
+
+      //get block containing this inode
+      get_block(mip->dev, block, buf);
+      ip = (INODE*)buf + offset; // ip points at INODE
+      *ip = mip->INODE; //copy INODE to inode in block
+      put_block(mip->dev, block, buf); //write back to disk
+      
+      idalloc(mip->dev, mip->ino); //mip->refCount = 0
 } 
 
 int search(MINODE *mip, char *name)
@@ -269,48 +280,4 @@ int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
    dp = (DIR *)temp;
    return dp->inode;
 
-}
-
-int clr_bit(char *buf, int bit) {
-   buf[bit/8] &= ~(1 << (bit%8));
-}
-
-int incFreeInodes(int dev) {
-   char buf[BLKSIZE];
-   get_block(dev, 1, buf);
-   sp = (SUPER *)buf;
-   sp->s_free_inodes_count++;
-   put_block(dev, 1, buf);
-   get_block(dev, 2, buf);
-   gp = (GD *) buf;
-   gp->bg_free_inodes_count++;
-   put_block(dev, 2, buf);
-}
-
-int idalloc(int dev, int ino) {
-   int i;
-   char buf[BLKSIZE];
-   MTABLE *mp = (MTABLE *)get_mtable(dev);
-   if (ino > mp->ninodes) {
-      printf("inumber %d out of range\n", ino);
-      return;
-   }
-   get_block(dev, mp->imap, buf);
-   clr_bit(buf, ino-1);
-   put_block(dev, mp->imap, buf);
-   incFreeInodes(dev);
-}
-
-int bdalloc(int dev, int bno) {
-   int i;
-   char buf[BLKSIZE];
-   MTABLE *mp = (MTABLE *)get_mtable(dev);
-   if (bno > mp->nblocks) {
-      printf("inumber %d out of range\n", bno);
-      return;
-   }
-   get_block(dev, mp->bmap, buf);
-   clr_bit(buf, bno-1);
-   put_block(dev, mp->bmap, buf);
-   incFreeInodes(dev);
 }

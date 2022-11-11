@@ -31,6 +31,7 @@ char line[128], cmd[32], pathname[128];
 
 #include "cd_ls_pwd.c"
 #include "rmdir.c"
+#include "alloc_dalloc.c"
 
 int init()
 {

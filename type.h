@@ -43,7 +43,7 @@ typedef struct mtable {
   int dev;
   int ninodes;
   int nblocks;
-  int free-blocks;
+  int free_blocks;
   int free_inodes;
   int bmap;
   int imap;
