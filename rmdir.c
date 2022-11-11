@@ -97,8 +97,9 @@ int my_rmdir(char* pathname) {
     strcpy(pathname, name);
     char* child = basename(name);
     rm_child(pmip, child);
-    iput(pmip);
-    bdalloc(mip->dev, mip->INODE.i_block[0]);
-    idalloc(mip->dev, mip->ino);
+    pmip->INODE.i_links_count--;
+    pmip->INODE.i_atime = time(0L);
+    pmip->INODE.i_ctime = time(0L);
+    pmip->dirty = 1;
     iput(mip);
 }
