@@ -29,6 +29,9 @@ int  nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128];
 
 #include "cd_ls_pwd.c"
+#include "alloc_dalloc.c"
+#include "mkdir_creat.c"
+#include "link_unlink.c"
 
 int init()
 {
@@ -108,7 +111,7 @@ int main(int argc, char *argv[ ])
   
   while(1){
     memset(pathname, 0, sizeof(pathname));
-    printf("input command : [ls|cd|pwd|quit] ");
+    printf("input command : [ls|cd|pwd|quit|mkdir|creat|link|unlink] ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -128,6 +131,14 @@ int main(int argc, char *argv[ ])
        pwd(running->cwd);
     else if (strcmp(cmd, "quit")==0)
        quit();
+    else if (strcmp(cmd, "mkdir")==0)
+        make_dir(pathname);
+    else if (strcmp(cmd, "creat")== 0)
+        creat_file(pathname);
+    else if (strcmp(cmd, "link"))
+        link_file(pathname);
+    else if (strcmp(cmd, "unlink"))
+        my_unlink(pathname);
   }
 }
 
