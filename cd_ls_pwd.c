@@ -68,6 +68,7 @@ int ls_file(MINODE *mip, char *name)
         //printf(" -> %s", mip->INODE.i_mode);
         printf(" -> %s", (char *)mip->INODE.i_block);
     }
+    printf("\t%d", mip->ino);
     printf("\n");
     return 0;
 }
@@ -100,6 +101,7 @@ int ls_dir(MINODE *mip)
 
      cp += dp->rec_len;
      dp = (DIR *)cp;
+     iput(mip1);
   }
   printf("\n");
   return 0;

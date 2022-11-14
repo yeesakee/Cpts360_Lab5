@@ -13,29 +13,37 @@ int rm_child(MINODE* pmip, char* name) {
   {
      strncpy(temp, dp->name, dp->name_len);
      temp[dp->name_len] = 0;
-     if (!strcmp(temp, name)) {
+     printf("%s, %s\n", temp, name);
+     if (!strncmp(temp, name, strlen(temp))) {
         // if child is first and only entry in data block
         if (cp == buf && cp + dp->rec_len == buf + BLKSIZE) {
             bdalloc(pmip->dev, ip->i_block[0]);
-            ip->i_size -= BLKSIZE;
             put_block(pmip->dev, ip->i_block[0], buf);
+            ip->i_block[0] = 0;
+            ip->i_size -= BLKSIZE;
+            pmip->dirty = 1;
+            return 0;
         }
-        else if (cp + dp->rec_len == buf + BLKSIZE) {
+        else if (cp + dp->rec_len >= buf + BLKSIZE) {
             prevdp->rec_len += dp->rec_len;
             put_block(pmip->dev, ip->i_block[0], buf);
+            pmip->dirty = 1;
+            printf("in remove last\n");
+            return 0;
         }
         else {
             // store the last directory information
-            DIR *lastdp = (DIR*)buf;
-            char *lastcp = buf;
+            char *lastcp = buf + dp->rec_len;
+            DIR *lastdp = (DIR*)lastcp;
 
             // loop until we get to the last directory
-            while (lastcp + lastdp->rec_len != buf + BLKSIZE) {
+            while (lastcp + lastdp->rec_len < buf + BLKSIZE) {
                 lastcp += lastdp->rec_len;
                 lastdp = (DIR*)lastcp;
             }
             
             // updating size
+            //
             lastdp->rec_len += dp->rec_len;
 
             // start of block
@@ -44,10 +52,9 @@ int rm_child(MINODE* pmip, char* name) {
 
             memmove(cp, start, end - start);
             put_block(pmip->dev, ip->i_block[0], buf);
+            pmip->dirty = 1;
+            return 0;
         }
-        pmip->dirty = 1;
-        iput(pmip);
-        return 0;
      }
      
      cp += dp->rec_len;
@@ -68,7 +75,7 @@ int my_rmdir(char* pathname) {
         printf("error minode type not DIR \n");
         return -1;
     }
-    if (mip->refCount > 2) {
+    if (mip->refCount > 1) {
         printf("error current directory is busy \n");
         return -1;
     }
@@ -92,14 +99,18 @@ int my_rmdir(char* pathname) {
     }
 
 
-    int pino = findino();
-    MINODE *pmip = iget(mip->dev, pino);
-    strcpy(pathname, name);
+    strcpy(name, pathname);
+    char* parent = dirname(name);
+    int pino = getino(parent);
+    MINODE *pmip = iget(mip->dev, pino); // create MINODE to make changes to INODE
+    strcpy(name, pathname);
     char* child = basename(name);
     rm_child(pmip, child);
     pmip->INODE.i_links_count--;
     pmip->INODE.i_atime = time(0L);
     pmip->INODE.i_ctime = time(0L);
     pmip->dirty = 1;
-    iput(mip);
+    idalloc(mip->dev, mip->ino);
+    iput(mip); // write back changes
+    iput(pmip);
 }

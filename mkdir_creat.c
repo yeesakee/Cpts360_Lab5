@@ -129,6 +129,7 @@ int my_mkdir(MINODE *pmip, char *name)
     ip->i_links_count = 2;  //links count is 2 becasue . and ..
     ip->i_atime = ip->i_ctime = ip->i_mtime = time(0L);
     ip->i_blocks = 2; //linux blocks count in 512 byte chunks
+    mip->refCount = 0;
 
    
     ip->i_block[0] = blk; //new dir has one data block
