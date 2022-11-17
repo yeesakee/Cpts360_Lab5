@@ -143,12 +143,12 @@ int search(MINODE *mip, char *name)
    DIR *dp;
    INODE *ip;
 
-   printf("search for %s in MINODE = [%d, %d]\n", name,mip->dev,mip->ino);
+   printf("search for %s in MINODE = [%d, %d]\n", name, mip->dev, mip->ino);
    ip = &(mip->INODE);
 
    /*** search for name in mip's data blocks: ASSUME i_block[0] ONLY ***/
 
-   get_block(dev, ip->i_block[0], sbuf);
+   get_block(mip->dev, mip->INODE.i_block[0], sbuf);
    dp = (DIR *)sbuf;
    cp = sbuf;
    printf("  ino   rlen  nlen  name\n");
@@ -159,8 +159,8 @@ int search(MINODE *mip, char *name)
      printf("%4d  %4d  %4d    %s\n", 
 	    dp->inode, dp->rec_len, dp->name_len, temp); // print temp !!!
 
-     if (strcmp(temp, name)==0){            // compare name with temp !!!
-        printf("found %s : ino = %d\n", temp, dp->inode);
+     if (strcmp(name, temp)==0){            // compare name with temp !!!
+        printf("found %s : ino = %d\n", name, dp->inode);
         return dp->inode;
      }
 

@@ -24,14 +24,18 @@ char gpath[128]; // global for tokenized components
 char *name[64];  // assume at most 64 components in pathname
 int   n;         // number of component strings
 
+OFT oft[64];
+
 int  fd, dev;
 int  nblocks, ninodes, bmap, imap, iblk;
-char line[128], cmd[32], pathname[128];
+char line[128], cmd[32], pathname[128], pathname2[128];
 
 #include "cd_ls_pwd.c"
 #include "alloc_dalloc.c"
 #include "mkdir_creat.c"
 #include "link_unlink.c"
+#include "symlink.c"
+#include "open_close.c"
 
 int init()
 {
@@ -48,11 +52,25 @@ int init()
     mip->mounted = 0;
     mip->mptr = 0;
   }
+
+  //initialize ofts as free
+  for( i = 0; i<NOFT; i++)
+  {
+      oft[i].refCount = 0; 
+  }
+
+  //initialize PROCS
   for (i=0; i<NPROC; i++){
     p = &proc[i];
     p->pid = i+1;           // pid = 1, 2
     p->uid = p->gid = 0;    // uid = 0: SUPER user
     p->cwd = 0;             // CWD of process
+    for(int j = 0; j < NFD; j++)
+    {
+        //fd[] of every proc = 0
+        proc[i].fd[j] = 0; //all file descriptors are null 
+    }
+        
   }
 }
 
@@ -63,7 +81,8 @@ int mount_root()
   root = iget(dev, 2);
 }
 
-char *disk = "mydisk";     // change this to YOUR virtual
+//switch to disk2
+char *disk = "disk2";     // change this to YOUR virtual
 
 int main(int argc, char *argv[ ])
 {
@@ -111,7 +130,7 @@ int main(int argc, char *argv[ ])
   
   while(1){
     memset(pathname, 0, sizeof(pathname));
-    printf("input command : [ls|cd|pwd|quit|mkdir|creat|link|unlink] ");
+    printf("input command : [ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|symlink|open|close|pfd] ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -135,10 +154,34 @@ int main(int argc, char *argv[ ])
         make_dir(pathname);
     else if (strcmp(cmd, "creat")== 0)
         creat_file(pathname);
-    else if (strcmp(cmd, "link"))
+    else if (strcmp(cmd, "link")== 0)
         link_file(pathname);
-    else if (strcmp(cmd, "unlink"))
+    else if (strcmp(cmd, "unlink")== 0)
         my_unlink(pathname);
+    else if(strcmp(cmd, "rmdir")==0)
+        my_rmdir(pathname);
+
+    else if(strcmp(cmd, "symlink")==0)
+    {
+      sscanf(line, "%s, %s, %s", cmd, pathname, pathname2);
+      symlink(pathname, pathname2);
+    }
+    else if(strcmp(cmd, "open")==0)
+    {
+      int mode = -1; 
+      sscanf(line, "%s, %s, %d", cmd, pathname, &mode);
+      open_file(pathname, mode);
+    }
+    else if(strcmp(cmd, "close")==0)
+    {
+      int fd = -1; 
+      sscanf(line, "%s, %d", cmd, fd);
+      my_close(fd);
+    }
+    else if(strcmp(cmd, "pfd")==0)
+      pfd();
+      
+
   }
 }
 

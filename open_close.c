@@ -1,0 +1,192 @@
+/************* open_close_lseek.c file **************/
+
+//#include "mkdir_creat.c"
+
+//extern char *name[32];
+
+int truncate(MINODE *mip)
+{
+    //release mip->INODE data block 
+
+    //update inodes time field 
+  return 1;
+}
+
+
+int open_file(char *pathname, int mode)
+{
+    //0|1|2|3 for R|W|RW|APPEND
+    printf("in open file\n");
+    if(pathname[0] == '/')
+    {
+        dev = root->dev;
+    }
+    else
+    {
+        dev = running->cwd->dev;
+    }
+
+   // MINODE *minodePtr; 
+    //get files minode 
+    int ino = getino(pathname);
+    //if file does not exist 
+    if(ino == 0)
+    {
+        //creat first
+        creat_file(pathname);
+        //then get its ino
+        ino = getino(pathname);
+    }
+    MINODE *mip = iget(dev, ino);
+
+    //check inode imode is regular file
+    if(!S_ISREG(mip->INODE.i_mode))
+    {
+        printf("error not a regular file\n");
+        return -1;
+    }
+    //check whether file is already opened with incompatible mode:
+    for(int i = 0; i < NFD; i++)
+    {
+        if(running->fd[i] == NULL)
+            break; 
+        if(running->fd[i]->minodePtr == mip)
+        {
+            if(mode != 0)
+            {
+                printf("error opened with incompatable mode\n");
+                return -1; 
+            }
+        }
+    }
+
+    //allocate an openTable entry OFT and initialize OFT entries
+    OFT *oftp = (OFT *)malloc(sizeof(OFT)); 
+    oftp->mode = mode; 
+    oftp->refCount = 1; 
+    oftp->minodePtr = mip;  //point at the files minode[]
+
+    switch(mode){
+        case 0: oftp->offset = 0;   //R: offset = 0
+                break;
+        case 1: truncate(mip);      //W: truncate file to 0 size
+                oftp->offset = 0; 
+                break;
+        case 2: oftp->offset = 0;   //RW: do NOT truncate file
+                break; 
+        case 3: oftp->offset = mip->INODE.i_size; //append mode 
+                break; 
+        default: printf("invalid mode\n");
+                 return(-1); 
+    }
+    //find the smallest i in running PROC's fd[ ] so that fd[i] is NULL
+    int return_fd = -1; 
+    for(int i = 0; i < NFD; i++)
+    {
+        if(running->fd[i] == NULL)
+        {
+            //let running fd[i] point at OFT entry 
+            running->fd[i] = oftp; 
+            return_fd = i; 
+            break; 
+        }
+    }
+
+    //update inodes time field
+    // for R: touch atime
+    // for W|RW|APPEND mode : touch atime and mtime
+    if(mode != 0)   //means it wasnt for read
+    {
+        mip->INODE.i_mtime = time(NULL);
+    }
+    //for W|RW|APPEND mode
+    mip->INODE.i_atime = time(NULL);
+    //mark minode[] dirty 
+    mip->dirty = 1; 
+    iput(mip);
+    //return i as the file descriptor 
+    return return_fd; 
+
+  // Eventually: return file descriptor of opened file
+}
+
+int my_close(int fd)
+{
+    //verify fd is within range 
+    //check fd is a valid opened file descriptor
+    if(running->fd[fd] == NULL)
+    {
+        printf("error not an OFT entry\n");
+        return -1; 
+    }
+    //verify open fd is pointing at a an OFT entry 
+    OFT *oftp = running->fd[fd];
+    running->fd[fd] = 0; 
+    oftp->refCount--; 
+    if(oftp->refCount > 0)
+    {
+        return 0; 
+    }
+    MINODE *mip = oftp->minodePtr;
+    mip->dirty = 1; 
+    iput(mip);
+    return 0;
+}
+
+int close_file(int fd)
+{
+  return 0;
+}
+
+//not required for level 2
+int my_lseek(int fd, int position)
+{
+    //from fd find the OFT entry 
+    if(running->fd[fd] == NULL)
+    {
+        printf("error not an OFT entry\n");
+        return -1; 
+    }
+    OFT *oftp = running->fd[fd];
+    //change OFT entrys offset to position but make sure NOT to over run 
+    if(position > oftp->minodePtr->INODE.i_size || position < 0)
+    {
+        printf("error overrun\n");
+    }
+
+    int original_position = oftp->offset;
+    oftp->offset = position; 
+
+    return original_position;
+
+   // Eventually: return original position in file
+}
+
+int pfd()
+{
+    //display currently opened files
+     printf("fd  mode    offset  INODE\n");
+    for(int i = 0; i < NFD; i++)
+    {
+        if(running->fd == NULL)
+        break;
+            printf("%d  %s  %d  [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
+    }
+    return 0;
+}
+
+int dup(int fd)
+{
+   //verify fd is an opened descriptor
+
+   //duplicates fd[fd] into first empty fd [] slot
+
+   //increment OFT refCount by 1
+    return 1;
+}
+
+int dup2(int fd, int gd)
+{
+    return 1;
+}
+
