@@ -255,3 +255,6 @@ int dup2(int fd, int gd)
     return 1;
 }
 
+int is_valid_fd(int fd) {
+    return (fd >= 0 && fd < NFD);
+}

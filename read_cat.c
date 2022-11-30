@@ -1,3 +1,23 @@
+int read_file() {
+    int fd = 0;
+    int nbytes = 0;
+    printf("Input a fd (file descriptor): ");
+    scanf("%d", fd);
+    if (!is_valid_fd(fd)) {
+        printf("Error: Invalid fd\n");
+        return -1;
+    }
+    printf("Input number of bytes to read: ");
+    scanf("%d", nbytes);
+
+    if (running->fd[fd]->mode != 0 || running->fd[fd]->mode != 2) {
+        printf("Error: fd not open for R/RW");
+        return -1;
+    }
+
+    char buf[BLKSIZE];
+    return my_read(fd, buf, nbytes);
+}
 int my_read(int fd, char* buf, int nbytes) {
     MINODE *mip = running->fd[fd]->minodePtr;
     // byte offset in file to READ

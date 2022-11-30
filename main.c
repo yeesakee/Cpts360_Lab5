@@ -146,8 +146,8 @@ int main(int argc, char *argv[ ])
        continue;
     pathname[0] = '\0';
 
-    sscanf(line, "%s %s", cmd, pathname);
-    printf("cmd=%s pathname=%s\n", cmd, pathname);
+    sscanf(line, "%s %s %d", cmd, pathname, &mode);
+    printf("cmd=%s pathname=%s mode=%d\n", cmd, pathname,mode);
   
     if (strcmp(cmd, "ls")==0) {
       ls(pathname);
@@ -178,8 +178,6 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "open")==0)
     {
-      //int mode = -1; 
-      sscanf(line, "%s, %s, %d", cmd, pathname, mode);
       printf("mode : %d\n", mode);
       open_file(pathname, mode);
     }
@@ -201,9 +199,9 @@ int main(int argc, char *argv[ ])
         sscanf(line, "%s, %s, %s", cmd, src_file, dest_file);
         my_cp(src_file, dest_file);
     }
-    // else if(strcmp(cmd, "read") == 0) {
-    //   my_read
-    // }
+    else if(strcmp(cmd, "read") == 0) {
+      read_file();
+    }
   }
 }
 
