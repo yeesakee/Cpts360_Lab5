@@ -1,6 +1,6 @@
 /************* open_close_lseek.c file **************/
 
-//#include "mkdir_creat.c"
+#include "mkdir_creat.c"
 
 //extern char *name[32];
 
@@ -66,6 +66,8 @@ int open_file(char *pathname, int mode)
     oftp->refCount = 1; 
     oftp->minodePtr = mip;  //point at the files minode[]
 
+    //depending which mode set offset 
+    printf("mode : %d\n", mode);
     switch(mode){
         case 0: oftp->offset = 0;   //R: offset = 0
                 break;
@@ -105,6 +107,7 @@ int open_file(char *pathname, int mode)
     mip->dirty = 1; 
     iput(mip);
     //return i as the file descriptor 
+    printf("fd = %d\n", return_fd);
     return return_fd; 
 
   // Eventually: return file descriptor of opened file
@@ -127,6 +130,8 @@ int my_close(int fd)
     {
         return 0; 
     }
+    printf("close: refcount = %d\n", oftp->refCount);
+    
     MINODE *mip = oftp->minodePtr;
     mip->dirty = 1; 
     iput(mip);
