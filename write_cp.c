@@ -59,7 +59,7 @@ int my_write(int fd, char buf[], int nbytes)
             }
             int ibuf[BLKSIZE / sizeof(int)] = { 0 };
             get_block(mip->dev, ip->i_block[12], (char *)ibuf);
-            blk = ibuf[lbk - 12];
+            int blk = ibuf[lbk - 12];
 
             if(blk == 0)
             {
@@ -79,7 +79,7 @@ int my_write(int fd, char buf[], int nbytes)
     return 1; // Eventually: return the number of bytes written
 }
 
-int my_cp(char *pathname)
+int my_cp(char *src_file, char *dest_file)
 {
     return 1;
 }

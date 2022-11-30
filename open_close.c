@@ -2,8 +2,6 @@
 
 #include "mkdir_creat.c"
 
-//extern char *name[32];
-
 int truncate(MINODE *mip)
 {
     //release mip->INODE data block 
@@ -115,6 +113,7 @@ int open_file(char *pathname, int mode)
 
 int my_close(int fd)
 {
+    printf("fd = %d\n", fd);
     //verify fd is within range 
     //check fd is a valid opened file descriptor
     if(running->fd[fd] == NULL)

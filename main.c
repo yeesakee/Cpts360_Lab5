@@ -29,7 +29,7 @@ OFT oft[64];
 int  fd, dev;
 int  nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128], pathname2[128];
-int mode; 
+int mode, closefd; 
 char string[128];
 char src_file[128], dest_file[128];
 
@@ -179,9 +179,9 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "close")==0)
     {
-      int fd = -1; 
-      sscanf(line, "%s, %d", cmd, fd);
-      my_close(fd);
+      //int fd = -1; 
+      sscanf(line, "%s, %d", cmd, closefd);
+      my_close(closefd);
     }
     else if(strcmp(cmd, "pfd")==0)
       pfd();
