@@ -29,6 +29,9 @@ OFT oft[64];
 int  fd, dev;
 int  nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128], pathname2[128];
+int mode; 
+char string[128];
+char src_file[128], dest_file[128];
 
 #include "cd_ls_pwd.c"
 #include "alloc_dalloc.c"
@@ -36,6 +39,7 @@ char line[128], cmd[32], pathname[128], pathname2[128];
 #include "link_unlink.c"
 #include "symlink.c"
 #include "open_close.c"
+#include "write_cp.c"
 
 int init()
 {
@@ -168,8 +172,9 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "open")==0)
     {
-      int mode = -1; 
-      sscanf(line, "%s, %s, %d", cmd, pathname, &mode);
+      //int mode = -1; 
+      sscanf(line, "%s, %s, %d", cmd, pathname, mode);
+      printf("mode : %d\n", mode);
       open_file(pathname, mode);
     }
     else if(strcmp(cmd, "close")==0)
@@ -180,6 +185,16 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "pfd")==0)
       pfd();
+    else if(strcmp(cmd, "write")==0)
+    {
+        sscanf(line, "%s, %d, %s", cmd, fd, string);
+        my_write(fd, string, sizeof(string));
+    }
+    else if(strcmp(cmd, "cp")==0)
+    {
+        sscanf(line, "%s, %s, %s", cmd, src_file, dest_file);
+        my_cp(src_file, dest_file);
+    }
       
 
   }

@@ -13,7 +13,7 @@ int my_write(int fd, char buf[], int nbytes)
     char ibuf[BLKSIZE];
     int count = 0; 
     OFT *oftp = running->fd[fd];
-    MINODE *mip = oftp->mptr; 
+    MINODE *mip = oftp->minodePtr; 
     INODE *ip = &mip->INODE; 
 
 
