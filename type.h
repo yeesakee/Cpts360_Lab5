@@ -19,6 +19,9 @@ DIR   *dp;
 #define BLKSIZE  1024
 #define NMINODE   128
 #define NPROC       2
+#define NFD         16
+#define NOFT        40
+
 
 
 typedef struct minode{
@@ -31,12 +34,21 @@ typedef struct minode{
   struct mntable *mptr;  // for level-3
 }MINODE;
 
+typedef struct oft{ //openfiletable
+    int mode;       // R|W|RW|APP
+    int refCount; 
+    MINODE *minodePtr;
+    int offset;
+}OFT;
+
 typedef struct proc{
   struct proc *next;
   int          pid;      // process ID  
   int          uid;      // user ID
   int          gid;
   MINODE      *cwd;      // CWD directory pointer  
+
+  OFT         *fd[NFD];
 }PROC;
 
 typedef struct mtable {
@@ -52,4 +64,3 @@ typedef struct mtable {
   char DevName[64];
   char mntName[64];
 }MTABLE;
-

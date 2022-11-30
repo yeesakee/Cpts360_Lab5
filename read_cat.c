@@ -1,5 +1,5 @@
 int my_read(int fd, char* buf, int nbytes) {
-    MINODE *mip = running->fd[fd]->mptr;
+    MINODE *mip = running->fd[fd]->minodePtr;
     // byte offset in file to READ
     int offset = running->fd[fd]->offset;
     // bytes available in file
@@ -67,7 +67,7 @@ int my_cat(char* pathname) {
     char mybuf[1024], temp[1024];
     int n;
     strncpy(temp, pathname, 1024);
-    int fd = open_file(temp, READ);
+    int fd = open_file(temp, 0);
     while (n = my_read(fd, mybuf[1024], 1024)) {
         mybuf[n] = 0;
         char* c = mybuf;

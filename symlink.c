@@ -25,7 +25,7 @@ int symlink_file(char *old_file, char *new_file)
       return -1; 
   }
   //creat new file
-  creat(new_file);
+  creat_file(new_file);
   //change new file to LNK type
   // check you created file
   if(new_ino == -1)
@@ -49,11 +49,6 @@ int symlink_file(char *old_file, char *new_file)
   mip->dirty = 1; 
   // iput new files minode 
   iput(mip);
-
-  //mark newfile parent miode dirty 
-
-  //iput new file parent mindoe 
-
 
   return 0;
 }

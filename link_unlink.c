@@ -3,9 +3,6 @@
 #ifndef __LINKUNLINK_C__
 #define __LINKUNLINK_C__
 
-#include "mkdir_creat.c"
-#include "rmdir.c"
-
 int my_link(MINODE *filePip, char *fileName, int fileIno, MINODE *linkPip, char *linkName)
 {
     return 1;
