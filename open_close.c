@@ -4,10 +4,70 @@
 
 int truncate(MINODE *mip)
 {
-    //release mip->INODE data block 
+    char buf[BLKSIZE];
+    INODE *ip = &mip->INODE;
+
+    //release mip->INODE data blocks 
+    //file may have 12 direct blocks 
+    for(int i = 0; i < 12; i++ )
+    {
+        if(ip->i_block[i] == 0)
+        {
+            break;
+        }
+        //deallocating block
+        bdalloc(mip->dev, ip->i_block[i]);
+        ip->i_block[i] = 0; 
+    }
+
+    //256 indirect blocks
+    if(ip->i_block[12] != NULL)
+    {
+        get_block(mip->dev, ip->i_block[12], buf);
+        int *indirect = (int *)buf;
+
+        int indirect_count = 0; 
+        while(indirect_count < BLKSIZE / sizeof(int))
+        {
+            if(indirect[indirect_count]==0)
+                break;
+            //deallocate the indirect blocks
+            bdalloc(mip->dev, indirect[indirect_count]);
+            indirect[indirect_count] = 0; 
+            indirect_count++;
+        }
+        // deallocate reference to indirect
+        bdalloc(mip->dev, ip->i_block[12]);
+        ip->i_block[12] = 0; 
+    }
+    //doubly indirect
+    if(ip->i_block[13]!= NULL)
+    {
+        get_block(mip->dev, ip->i_block[13], buf);
+        int *doubly_indirect = (int *)buf;
+        int doubly_indirect_count = 0; 
+
+        while(doubly_indirect_count < BLKSIZE / sizeof(int))
+        {
+            if(doubly_indirect[doubly_indirect_count] == 0)
+                break;
+            
+            //deallocate
+            bdalloc(mip->dev, doubly_indirect[doubly_indirect_count]);
+            doubly_indirect[doubly_indirect_count] = 0; 
+            doubly_indirect_count++;
+        }
+        bdalloc(mip->dev, ip->i_block[13]);
+        ip->i_block[13] = 0; 
+    }
 
     //update inodes time field 
-  return 1;
+    mip->INODE.i_atime = mip->INODE.i_mtime = time(0L);
+    //set INODES size to 0 mark mindode[] dirty 
+    mip->INODE.i_size = 0; 
+    mip->dirty = 1; 
+    iput(mip);
+
 }
 
 
