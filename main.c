@@ -33,6 +33,7 @@ char line[128], cmd[32], pathname[128];
 #include "rmdir.c"
 #include "alloc_dalloc.c"
 #include "mkdir_creat.c"
+#include "read_cat.c"
 // #include "link_unlink.c"
 
 int init()
@@ -66,7 +67,7 @@ int mount_root()
   
 }
 
-char *disk = "mydisk";     // change this to YOUR virtual
+char *disk = "disk2";     // change this to YOUR virtual
 
 int main(int argc, char *argv[ ])
 {
@@ -114,7 +115,7 @@ int main(int argc, char *argv[ ])
   
   while(1){
     memset(pathname, 0, sizeof(pathname));
-    printf("input command : [ls|cd|pwd|quit|mkdir|creat|link|unlink] ");
+    printf("input command : [ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|cat] ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -140,6 +141,8 @@ int main(int argc, char *argv[ ])
         creat_file(pathname);
     else if (strcmp(cmd, "rmdir") == 0)
         my_rmdir(pathname);
+    else if (strcmp(cmd, "cat") == 0)
+        my_cat(pathname);
     // else if (strcmp(cmd, "link"))
     //     link_file(pathname);
     // else if (strcmp(cmd, "unlink"))
