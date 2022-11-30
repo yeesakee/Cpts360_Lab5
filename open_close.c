@@ -75,6 +75,7 @@ int open_file(char *pathname, int mode)
 {
     //0|1|2|3 for R|W|RW|APPEND
     printf("in open file\n");
+    printf("mode in open file= %d\n", mode);
     if(pathname[0] == '/')
     {
         dev = root->dev;
