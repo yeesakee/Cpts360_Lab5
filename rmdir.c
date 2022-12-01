@@ -1,6 +1,7 @@
 #ifndef __RMDIR_C__
 #define __RMDIR_C__
 
+
 int rm_child(MINODE* pmip, char* name) {
   char buf[BLKSIZE], temp[BLKSIZE];
   DIR *dp, *prevdp;
@@ -67,7 +68,7 @@ int rm_child(MINODE* pmip, char* name) {
   return -1;
 }
 
-int my_rmdir(char* pathname) {
+int my_rmdir(char *pathname) {
     int ino = getino(pathname);
     if (ino == -1) {
         printf("error: ino doesn't exist \n");
@@ -117,5 +118,4 @@ int my_rmdir(char* pathname) {
     iput(mip); // write back changes
     iput(pmip);
 }
-
 #endif

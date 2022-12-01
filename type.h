@@ -23,7 +23,6 @@ DIR   *dp;
 #define NOFT        40
 
 
-
 typedef struct minode{
   INODE INODE;           // INODE structure on disk
   int dev, ino;          // (dev, ino) of INODE
@@ -50,6 +49,7 @@ typedef struct proc{
 
   OFT         *fd[NFD];
 }PROC;
+
 
 typedef struct mtable {
   int dev;

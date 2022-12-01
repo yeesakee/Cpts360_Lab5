@@ -15,7 +15,7 @@ char buf[BLKSIZE];
 //enters a [ino, name] as a new dir entry into a parent directory
 int enter_name(MINODE *pip, int ino, char *name)
 {  
-    printf("in enter_name\n");
+    //printf("in enter_name\n");
     char *cp;
     INODE *ip;
     int blk; 
@@ -32,7 +32,7 @@ int enter_name(MINODE *pip, int ino, char *name)
     {
         if(ip->i_block[i] == 0) 
         {
-            printf("in break\n");
+           // printf("in break\n");
             break; 
         }
         //get parents data block into a buf
@@ -60,7 +60,7 @@ int enter_name(MINODE *pip, int ino, char *name)
 
         if(remain >= need_length)
         {
-            printf("in if\n");
+            //printf("in if\n");
             //enter new entry at the last entry 
             //and trim previous entry rec len to its ideal length 
             dp->rec_len = ideal_length; //trimming
@@ -82,7 +82,7 @@ int enter_name(MINODE *pip, int ino, char *name)
         // 5 not enough space 
         else
         {
-            printf("in else\n");
+           // printf("in else\n");
             //increment parent size by bulk size 
             ip->i_size = BLKSIZE;
             //need to allocate a new data block 
@@ -110,7 +110,7 @@ int enter_name(MINODE *pip, int ino, char *name)
 //to create a DIR
 int my_mkdir(MINODE *pmip, char *name)
 {
-    printf("in my_mkdir\n");
+    //printf("in my_mkdir\n");
     char *cp; 
     int pino; //parent direcotry ino
 
@@ -130,7 +130,6 @@ int my_mkdir(MINODE *pmip, char *name)
     ip->i_atime = ip->i_ctime = ip->i_mtime = time(0L);
     ip->i_blocks = 2; //linux blocks count in 512 byte chunks
     mip->refCount = 0;
-
    
     ip->i_block[0] = blk; //new dir has one data block
     for(int i = 1; i < 15; i++)
@@ -186,7 +185,7 @@ int my_mkdir(MINODE *pmip, char *name)
 
 int make_dir(char *pathname)
 {
-    printf("in make_dir\n");
+    //printf("in make_dir\n");
     //int pino;
     //MINODE *pmip;
     MINODE *start; 
@@ -286,7 +285,7 @@ int my_creat(MINODE *pip, char *name)
 
 int creat_file(char *pathname)
 {
-     printf("in creat file\n");
+    // printf("in creat file\n");
     //int pino;
     //MINODE *pmip;
     MINODE *start; 

@@ -222,6 +222,7 @@ int my_close(int fd)
     MINODE *mip = oftp->minodePtr;
     mip->dirty = 1; 
     iput(mip);
+    free(oftp);
     return 0;
 }
 

@@ -1,3 +1,6 @@
+#ifndef __CDLSPWD_C__
+#define __CDLSPWD_C__
+
 /************* cd_ls_pwd.c file **************/
 int cd(char* pathname)
 {
@@ -101,7 +104,7 @@ int ls_dir(MINODE *mip)
 
      cp += dp->rec_len;
      dp = (DIR *)cp;
-     iput(mip1);
+    iput(mip1);
   }
   printf("\n");
   return 0;
@@ -179,5 +182,7 @@ char *pwd(MINODE *wd)
       printf("\n");
    }
 }
+
+#endif
 
 

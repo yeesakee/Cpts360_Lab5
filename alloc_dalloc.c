@@ -1,24 +1,11 @@
+
 int tst_bit(char *buf, int bit) // in Chapter 11.3.1
 {
-    // int i; 
-    // int j;
-    // i = bit / 8;
-    // j = bit % 8; // 8 = number of bits in a byte
-    // if(buf[i] & (1 << j))
-    // {
-    //     return 1; 
-    // }
-    // return 0;
     return buf[bit/8] & (1 << (bit % 8));
 }
 
 int set_bit(char *buf, int bit) // in Chapter 11.3.1
 {
-    // int i;
-    // int j;
-    // i = bit /8;
-    // j = bit % 8;
-    // buf[i] |= (1 << j);
     buf[bit/8] |= (1 << (bit % 8));
 }
 
@@ -84,15 +71,12 @@ int balloc(int dev)
           put_block(dev, bmap, buf);
           decFreeInodes(dev);
           return i +1;
-
       }
   }
   return 0; 
 }
 
 // Finish iput(MINODE *mip) code in util.c (in Chapter 11.7.2 3.3)
-
-//int bdalloc(dev, bno) deallocate a  block number
 
 int incFreeInodes(int dev)
 {
