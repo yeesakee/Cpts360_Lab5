@@ -31,8 +31,6 @@ int read_file() {
 int my_read(int fd, char* buf, int nbytes) {
     OFT *oftp = running->fd[fd];
     MINODE *mip = oftp->minodePtr;
-    printf("**************************************\n");
-     printf("Enter my_read: file %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
     // byte offset in file to READ
    // int offset = running->fd[fd]->offset;
     // bytes available in file
@@ -98,9 +96,6 @@ int my_read(int fd, char* buf, int nbytes) {
             nbytes = 0;
         }
     }
-    printf("**************************************\n");
-    printf("exit my_read read %d char from file %d\n", count, fd);
-    printf("**************************************\n");
     return count;
 }
 int my_cat(char* pathname) {
@@ -124,7 +119,6 @@ int my_cat(char* pathname) {
     }
     my_close(fd);
     printf("exit cat\n");
-    printf("**************************************\n");
     return 0; 
 }
 
