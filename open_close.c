@@ -4,6 +4,7 @@
 
 int truncate(MINODE *mip)
 {
+    printf("in truncate\n");
     char buf[BLKSIZE];
     INODE *ip = &mip->INODE;
 
@@ -73,6 +74,7 @@ int truncate(MINODE *mip)
 
 int open_file(char *pathname, int mode)
 {
+   
     //0|1|2|3 for R|W|RW|APPEND
     printf("in open file\n");
     printf("mode in open file= %d\n", mode);
@@ -227,15 +229,15 @@ int my_lseek(int fd, int position)
    // Eventually: return original position in file
 }
 
-int pfd()
+int pfd(void)
 {
     //display currently opened files
-     printf("fd  mode    offset  INODE\n");
+     printf("fd  mode  offset    INODE\n");
     for(int i = 0; i < NFD; i++)
     {
-        if(running->fd == NULL)
-        break;
-            printf("%d  %s  %d  [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
+        if(running->fd[i] == NULL)
+            break;
+        printf("%d  %s    %d     [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
     }
     return 0;
 }
@@ -255,3 +257,7 @@ int dup2(int fd, int gd)
     return 1;
 }
 
+int is_valid_fd(int fd) 
+{
+    return (fd >= 0 && fd < NFD);
+}
