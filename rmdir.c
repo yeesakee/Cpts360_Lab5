@@ -1,3 +1,6 @@
+#ifndef __RMDIR_C__
+#define __RMDIR_C__
+
 int rm_child(MINODE* pmip, char* name) {
   char buf[BLKSIZE], temp[BLKSIZE];
   DIR *dp, *prevdp;
@@ -114,3 +117,5 @@ int my_rmdir(char* pathname) {
     iput(mip); // write back changes
     iput(pmip);
 }
+
+#endif

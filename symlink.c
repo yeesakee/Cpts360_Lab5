@@ -8,36 +8,53 @@
 
 int symlink_file(char *old_file, char *new_file)
 {
-    MINODE *mip; 
+  MINODE *mip; 
+  //setting
+  if(old_file[0] == '/')
+  {
+      dev = root->dev;
+  }
+  else
+  {
+      dev = running->cwd->dev;
+  }
+
   //check old_file must exist 
   //pathname: symlink old_file new_file
-  int old_ino = getino(old_file);
-  if(old_ino == -1)
+  int oino = getino(old_file);
+  if(oino == -1)
   {
     printf("old file does not exist\n");
     return -1; 
   }
-  //and new file does not exist 
-  int new_ino = getino(new_file);
-  if(new_ino != -1)
+
+  //setting new
+  if(new_file[0] == '/')
   {
-      printf("error new file aleady exists\n");
+      dev = root->dev;
+  }
+  else
+  {
+      dev = running->cwd->dev;
+  }
+   //creat new file
+  creat_file(new_file);
+  //and new file does not exist 
+  int nino = getino(new_file);
+  if(nino == -1)
+  {
+      printf("error new file does not exist\n");
       return -1; 
   }
   //creat new file
-  creat_file(new_file);
+  //creat_file(new_file);
   //change new file to LNK type
   // check you created file
-  if(new_ino == -1)
-  {
-      printf("error in creat new file does not exist\n");
-      return -1; 
-  }
   
-  mip = iget(dev, new_ino);
-
+  mip = iget(dev, nino);
   //change new file LNK type
   mip->INODE.i_mode = 0xA1FF;
+  mip->dirty = 1; 
   
   //store old file name in new files block area
   strncpy(mip->INODE.i_block, old_file, 84);
@@ -50,7 +67,8 @@ int symlink_file(char *old_file, char *new_file)
   // iput new files minode 
   iput(mip);
 
-  return 0;
+  
+
 }
 
 int my_readlink(char *pathname)

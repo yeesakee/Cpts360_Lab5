@@ -1,17 +1,27 @@
+
+#ifndef __READCAT_C__
+#define __READCAT_C__
+
+#include "open_close.c"
+
 int read_file() {
     int fd = 0;
     int nbytes = 0;
-    printf("Input a fd (file descriptor): ");
-    scanf("%d", fd);
+    printf("Input a fd (file descriptor): \n");
+    //fgets(line, 128, stdin);
+    scanf("%d", &fd);
+    printf("fd entered = %d\n", fd);
     if (!is_valid_fd(fd)) {
         printf("Error: Invalid fd\n");
         return -1;
     }
-    printf("Input number of bytes to read: ");
-    scanf("%d", nbytes);
+    printf("Input number of bytes to read: \n");
+    scanf("%d", &nbytes);
 
-    if (running->fd[fd]->mode != 0 || running->fd[fd]->mode != 2) {
-        printf("Error: fd not open for R/RW");
+    printf("running fd mode =  %d\n", running->fd[fd]->mode);
+
+    if (running->fd[fd]->mode != 0 && running->fd[fd]->mode != 2) {
+        printf("Error: fd not open for R/RW\n");
         return -1;
     }
 
@@ -19,22 +29,25 @@ int read_file() {
     return my_read(fd, buf, nbytes);
 }
 int my_read(int fd, char* buf, int nbytes) {
-    MINODE *mip = running->fd[fd]->minodePtr;
+    OFT *oftp = running->fd[fd];
+    MINODE *mip = oftp->minodePtr;
+    printf("**************************************\n");
+     printf("Enter my_read: file %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
     // byte offset in file to READ
-    int offset = running->fd[fd]->offset;
+   // int offset = running->fd[fd]->offset;
     // bytes available in file
-    int avil = mip->INODE.i_size - offset;
+    int avil = mip->INODE.i_size - oftp->offset;
     int lbk, start, blk, count = 0;
     int ibuf[BLKSIZE];
     int jbuf[BLKSIZE];
+
+    if (nbytes > avil)
+        nbytes = avil;
     while (nbytes && avil) {
-        printf("%d\n", nbytes);
         // logical block
-        lbk = offset / BLKSIZE;
-        printf("lbk: %d\n", lbk);
+        lbk = oftp->offset / BLKSIZE;
         // start byte in block
-        start = offset % BLKSIZE;
-        printf("start: %d\n", start);
+        start = oftp->offset % BLKSIZE;
         // convert logical block number lbk to physical block number
         // page# 348
         // direct block
@@ -64,43 +77,42 @@ int my_read(int fd, char* buf, int nbytes) {
         char *cp = kbuf + start;
         int remain = BLKSIZE - start;
         char *temp_buf = buf;
-        printf("reamin: %d\n", remain);
         if (nbytes > remain) {
             memcpy(temp_buf, cp, remain);
             cp += remain;
-            temp_buf += remain;
-            running->fd[fd]->offset += remain;
+            buf += remain;
+            oftp->offset += remain;
             count += remain;
             avil -= remain;
             nbytes -= remain;
-            remain -= remain;
+            remain = 0;
         }
         else {
-            printf("here\n");
             memcpy(temp_buf, cp, nbytes);
-            printf("after here");
             cp += nbytes;
-            temp_buf += nbytes;
-            running->fd[fd]->offset += nbytes;
+            buf += nbytes;
+            oftp->offset += nbytes;
             count += nbytes;
             avil -= nbytes;
-            nbytes -= nbytes;
             remain -= nbytes;
+            nbytes = 0;
         }
     }
-    printf("count:%d\n", count);
+    printf("**************************************\n");
+    printf("exit my_read read %d char from file %d\n", count, fd);
     return count;
 }
 int my_cat(char* pathname) {
-    char mybuf[1024], temp[1024];
+    printf("enter cat\n");
+    char mybuf[BLKSIZE], temp[BLKSIZE];
     int n;
     strncpy(temp, pathname, 1024);
     int fd = open_file(temp, 0);
-    while (n = my_read(fd, mybuf[1024], 1024)) {
+    while (n = my_read(fd, mybuf, BLKSIZE)) {
         mybuf[n] = 0;
-        char* c = mybuf;
-        while (c != "\0") {
-            if (c == "\n") {
+        char *c = mybuf;
+        while (*c != '\0') {
+            if (*c == '\n') {
                 printf("\n");
             }
             else {
@@ -109,5 +121,9 @@ int my_cat(char* pathname) {
             c++;
         }
     }
-    close(fd);
+    my_close(fd);
+    printf("exit cat\n");
+    return 0; 
 }
+
+#endif

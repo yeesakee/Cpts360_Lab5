@@ -19,7 +19,6 @@ extern MINODE *iget();
 MINODE minode[NMINODE];
 MINODE *root;
 PROC   proc[NPROC], *running;
-MTABLE mountTable[8];
 
 char gpath[128]; // global for tokenized components
 char *name[64];  // assume at most 64 components in pathname
@@ -29,7 +28,7 @@ OFT oft[64];
 
 int  fd, dev;
 int  nblocks, ninodes, bmap, imap, iblk;
-char line[128], cmd[32], pathname[128], pathname2[128];
+char line[128], cmd[32], pathname[128], old_file[128], new_file[128];
 int mode, closefd; 
 char string[128];
 char src_file[128], dest_file[128];
@@ -86,7 +85,6 @@ int mount_root()
 {  
   printf("mount_root()\n");
   root = iget(dev, 2);
-  
 }
 
 //switch to disk2
@@ -95,6 +93,7 @@ char *disk = "disk2";     // change this to YOUR virtual
 int main(int argc, char *argv[ ])
 {
   int ino;
+  //int mode; 
   char buf[BLKSIZE];
   printf("checking EXT2 FS ....");
   if ((fd = open(disk, O_RDWR)) < 0){
@@ -138,7 +137,7 @@ int main(int argc, char *argv[ ])
   
   while(1){
     memset(pathname, 0, sizeof(pathname));
-    printf("input command : [ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|symlink|open|close|pfd] ");
+    printf("input command : [ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|symlink|\n open|close|pfd|cat|read|write] \n");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -147,7 +146,7 @@ int main(int argc, char *argv[ ])
     pathname[0] = '\0';
 
     sscanf(line, "%s %s %d", cmd, pathname, &mode);
-    printf("cmd=%s pathname=%s mode=%d\n", cmd, pathname,mode);
+    printf("cmd=%s pathname=%s param=%d\n", cmd, pathname, mode);
   
     if (strcmp(cmd, "ls")==0) {
       ls(pathname);
@@ -162,22 +161,32 @@ int main(int argc, char *argv[ ])
         make_dir(pathname);
     else if (strcmp(cmd, "creat")== 0)
         creat_file(pathname);
-    else if (strcmp(cmd, "cat") == 0)
-        my_cat(pathname);
     else if (strcmp(cmd, "link")== 0)
-        link_file(pathname);
+    {
+        sscanf(line, "%s %s %s", cmd, old_file, new_file);
+        printf("old file %s new file = %s\n", old_file, new_file);
+        link_file(old_file, new_file);
+    }
+       // link_file(pathname);
     else if (strcmp(cmd, "unlink")== 0)
+    {
+        sscanf(line, "%s %s", cmd, pathname);
         my_unlink(pathname);
+    }
+        //my_unlink(pathname);
     else if(strcmp(cmd, "rmdir")==0)
+    {
         my_rmdir(pathname);
-
+    }
     else if(strcmp(cmd, "symlink")==0)
     {
-      sscanf(line, "%s, %s, %s", cmd, pathname, pathname2);
-      symlink(pathname, pathname2);
+      sscanf(line, "%s %s %s", cmd, old_file, new_file);
+      printf("symlink old_file = %s newfile = %s\n", old_file, new_file);
+      symlink_file(old_file, new_file);
     }
     else if(strcmp(cmd, "open")==0)
     {
+      printf("mode : %d\n", mode);
       open_file(pathname, mode);
     }
     else if(strcmp(cmd, "close")==0)
@@ -190,16 +199,22 @@ int main(int argc, char *argv[ ])
       pfd();
     else if(strcmp(cmd, "write")==0)
     {
-        sscanf(line, "%s, %d, %s", cmd, fd, string);
+        sscanf(line, "%s %d %s", cmd, &fd, string);
+        printf("echo fd=%d text=%s\n", fd, string);
         my_write(fd, string, sizeof(string));
+    }
+    else if(strcmp(cmd, "read")==0)
+    {
+        read_file();
     }
     else if(strcmp(cmd, "cp")==0)
     {
         sscanf(line, "%s, %s, %s", cmd, src_file, dest_file);
         my_cp(src_file, dest_file);
     }
-    else if(strcmp(cmd, "read") == 0) {
-      read_file();
+    else if(strcmp(cmd, "cat")==0)
+    {
+        my_cat(pathname);
     }
   }
 }

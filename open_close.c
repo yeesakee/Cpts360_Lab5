@@ -1,9 +1,13 @@
 /************* open_close_lseek.c file **************/
 
+#ifndef __OPENCLOSE_C__
+#define __OPENCLOSE_C__
+
 #include "mkdir_creat.c"
 
 int truncate(MINODE *mip)
 {
+    printf("in truncate\n");
     char buf[BLKSIZE];
     INODE *ip = &mip->INODE;
 
@@ -73,6 +77,7 @@ int truncate(MINODE *mip)
 
 int open_file(char *pathname, int mode)
 {
+   
     //0|1|2|3 for R|W|RW|APPEND
     printf("in open file\n");
     printf("mode in open file= %d\n", mode);
@@ -88,14 +93,36 @@ int open_file(char *pathname, int mode)
    // MINODE *minodePtr; 
     //get files minode 
     int ino = getino(pathname);
-    //if file does not exist 
-    if(ino == 0)
+
+    if(ino == -1)
     {
-        //creat first
+        char p[BLKSIZE], buf[BLKSIZE];
+        strcpy(buf, pathname);
+        strcpy(p, dirname(buf));
+        printf("p = %s\n", p);
+        int pino = getino(p);
+        if(pino == -1)
+        {
+            printf("error on finding parent\n");
+            return -1; 
+        }
+    
+
+
+    // //if file does not exist 
+    // if(ino == 0)
+    // {
+    //     //creat first
+    //     creat_file(pathname);
+    //     //then get its ino
+    //     ino = getino(pathname);
+    // }
+        MINODE *pmip = iget(dev, pino);
+
         creat_file(pathname);
-        //then get its ino
         ino = getino(pathname);
     }
+
     MINODE *mip = iget(dev, ino);
 
     //check inode imode is regular file
@@ -227,15 +254,15 @@ int my_lseek(int fd, int position)
    // Eventually: return original position in file
 }
 
-int pfd()
+int pfd(void)
 {
     //display currently opened files
-     printf("fd  mode    offset  INODE\n");
+     printf("fd  mode  offset    INODE\n");
     for(int i = 0; i < NFD; i++)
     {
-        if(running->fd == NULL)
-        break;
-            printf("%d  %s  %d  [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
+        if(running->fd[i] == NULL)
+            break;
+        printf("%d  %s    %d     [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
     }
     return 0;
 }
@@ -255,6 +282,9 @@ int dup2(int fd, int gd)
     return 1;
 }
 
-int is_valid_fd(int fd) {
+int is_valid_fd(int fd) 
+{
     return (fd >= 0 && fd < NFD);
 }
+
+#endif
