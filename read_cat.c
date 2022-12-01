@@ -97,6 +97,7 @@ int my_read(int fd, char* buf, int nbytes) {
     }
     printf("**************************************\n");
     printf("exit my_read read %d char from file %d\n", count, fd);
+    printf("**************************************\n");
     return count;
 }
 int my_cat(char* pathname) {
@@ -120,6 +121,7 @@ int my_cat(char* pathname) {
     }
     my_close(fd);
     printf("exit cat\n");
+    printf("**************************************\n");
     return 0; 
 }
 
