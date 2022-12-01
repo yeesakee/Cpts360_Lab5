@@ -3,24 +3,47 @@
 #ifndef __LINKUNLINK_C__
 #define __LINKUNLINK_C__
 
+#include "mkdir_creat.c"
+#include "rmdir.c"
+
 int my_link(MINODE *filePip, char *fileName, int fileIno, MINODE *linkPip, char *linkName)
 {
     return 1;
 }
 
-int link_file(char *pathname)
+int link_file(char *old_file, char *new_file)
 {
-    char *old_file;
-    char *new_file; 
+    // char *old_file;
+    // char *new_file; 
+
+    if(old_file[0] == '/')
+    {
+        dev = root->dev;
+    }
+    else
+    {
+        dev = running->cwd->dev;
+    }
+
     //verify old file exists and is not a dir
     int oino = getino(old_file);
     MINODE *omip = iget(dev, oino);
 
     //check omip->INODE file type is a dir
-    if(!S_ISDIR(omip->INODE.i_mode))
+    if(S_ISDIR(omip->INODE.i_mode))
     {
-        printf("error type si not DIR\n");
+        printf("error type is DIR\n");
         return -1; 
+    }
+
+    //set for new
+    if(new_file[0] == '/')
+    {
+        dev = root->dev;
+    }
+    else
+    {
+        dev = running->cwd->dev;
     }
 
     int nino = getino(new_file);
@@ -28,15 +51,17 @@ int link_file(char *pathname)
     if(nino != 0)
     {
         printf("error file already exists\n");
+        return -1;
     }
 
     //creat new_file with same inode number of old_file
+
    //divide pathname into dirname an dbasename
-    strcpy(temp, pathname);
-    strcpy (base, basename(temp));
+    //strcpy(temp, new_file);
+    strcpy (base, basename(new_file));
     printf("basename = %s\n", base);
-    strcpy(temp2, pathname);
-    strcpy(dirName, dirname(temp2));
+    //strcpy(temp2, pathname);
+    strcpy(dirName, dirname(new_file));
     printf("dirname = %s\n", dirName);
 
     int pino = getino(dirName);
@@ -48,10 +73,11 @@ int link_file(char *pathname)
     //increase link count by 1
     omip->INODE.i_links_count ++; 
     omip->dirty = 1; 
+    pmip->dirty = 1; 
+
     iput(omip);
     iput(pmip);
 
-    return 0;
 }
 
 int my_unlink(char *pathname)
@@ -107,7 +133,7 @@ int my_unlink(char *pathname)
             //deallocate INODE; 
             if(!S_ISLNK(mip->INODE.i_mode))
             {
-                //inode_truncate(mip);
+                truncate(mip);
             }
             
         }
@@ -116,6 +142,9 @@ int my_unlink(char *pathname)
     mip->dirty =1;
     //release mip
     iput(mip); 
+
+    //remove child
+
     return 0;
 }
 
