@@ -178,7 +178,6 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "open")==0)
     {
-      printf("mode : %d\n", mode);
       open_file(pathname, mode);
     }
     else if(strcmp(cmd, "close")==0)

@@ -28,10 +28,13 @@ int my_read(int fd, char* buf, int nbytes) {
     int ibuf[BLKSIZE];
     int jbuf[BLKSIZE];
     while (nbytes && avil) {
+        printf("%d\n", nbytes);
         // logical block
         lbk = offset / BLKSIZE;
+        printf("lbk: %d\n", lbk);
         // start byte in block
         start = offset % BLKSIZE;
+        printf("start: %d\n", start);
         // convert logical block number lbk to physical block number
         // page# 348
         // direct block
@@ -56,14 +59,16 @@ int my_read(int fd, char* buf, int nbytes) {
             blk = ibuf[lbk%256];
         }
 
-        char* kbuf[BLKSIZE];
+        char kbuf[BLKSIZE];
         get_block(mip->dev, blk, kbuf);
         char *cp = kbuf + start;
         int remain = BLKSIZE - start;
+        char *temp_buf = buf;
+        printf("reamin: %d\n", remain);
         if (nbytes > remain) {
-            memcpy(buf, cp, remain);
+            memcpy(temp_buf, cp, remain);
             cp += remain;
-            buf += remain;
+            temp_buf += remain;
             running->fd[fd]->offset += remain;
             count += remain;
             avil -= remain;
@@ -71,17 +76,20 @@ int my_read(int fd, char* buf, int nbytes) {
             remain -= remain;
         }
         else {
-            memcpy(buf, cp, nbytes);
+            printf("here\n");
+            memcpy(temp_buf, cp, nbytes);
+            printf("after here");
             cp += nbytes;
-            buf += nbytes;
+            temp_buf += nbytes;
             running->fd[fd]->offset += nbytes;
             count += nbytes;
             avil -= nbytes;
             nbytes -= nbytes;
             remain -= nbytes;
         }
-        return count;
     }
+    printf("count:%d\n", count);
+    return count;
 }
 int my_cat(char* pathname) {
     char mybuf[1024], temp[1024];
