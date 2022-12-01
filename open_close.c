@@ -1,5 +1,8 @@
 /************* open_close_lseek.c file **************/
 
+#ifndef __OPENCLOSE_C__
+#define __OPENCLOSE_C__
+
 #include "mkdir_creat.c"
 
 int truncate(MINODE *mip)
@@ -261,3 +264,5 @@ int is_valid_fd(int fd)
 {
     return (fd >= 0 && fd < NFD);
 }
+
+#endif

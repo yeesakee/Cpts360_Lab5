@@ -1,17 +1,46 @@
+#ifndef __READCAT_C__
+#define __READCAT_C__
+
+#include "open_close.c"
+
+int read_file() {
+    int fd = 0;
+    int nbytes = 0;
+    printf("Input a fd (file descriptor): \n");
+    //fgets(line, 128, stdin);
+    scanf("%d", &fd);
+    if (!is_valid_fd(fd)) {
+        printf("Error: Invalid fd\n");
+        return -1;
+    }
+    printf("Input number of bytes to read: \n");
+    scanf("%d", &nbytes);
+
+    if (running->fd[fd]->mode != 0 || running->fd[fd]->mode != 2) {
+        printf("Error: fd not open for R/RW\n");
+        return -1;
+    }
+
+    char buf[BLKSIZE];
+    return my_read(fd, buf, nbytes);
+}
+
 int my_read(int fd, char* buf, int nbytes) {
-    MINODE *mip = running->fd[fd]->minodePtr;
+    printf("in my_read\n");
+    OFT *oftp = running->fd[fd];
+    MINODE *mip = oftp->minodePtr;
     // byte offset in file to READ
-    int offset = running->fd[fd]->offset;
+   // int offset = running->fd[fd]->offset;
     // bytes available in file
-    int avil = mip->INODE.i_size - offset;
+    int avil = mip->INODE.i_size - oftp->offset;
     int lbk, start, blk, count = 0;
     int ibuf[BLKSIZE];
     int jbuf[BLKSIZE];
     while (nbytes && avil) {
         // logical block
-        lbk = offset / BLKSIZE;
+        lbk = oftp->offset / BLKSIZE;
         // start byte in block
-        start = offset % BLKSIZE;
+        start = oftp->offset % BLKSIZE;
         // convert logical block number lbk to physical block number
         // page# 348
         // direct block
@@ -44,7 +73,7 @@ int my_read(int fd, char* buf, int nbytes) {
             memcpy(buf, cp, remain);
             cp += remain;
             buf += remain;
-            running->fd[fd]->offset += remain;
+            oftp->offset += remain;
             count += remain;
             avil -= remain;
             nbytes -= remain;
@@ -54,14 +83,15 @@ int my_read(int fd, char* buf, int nbytes) {
             memcpy(buf, cp, nbytes);
             cp += nbytes;
             buf += nbytes;
-            running->fd[fd]->offset += nbytes;
+            oftp->offset += nbytes;
             count += nbytes;
             avil -= nbytes;
             nbytes -= nbytes;
             remain -= nbytes;
         }
-        return count;
+        //return count;
     }
+    return count;
 }
 int my_cat(char* pathname) {
     char mybuf[1024], temp[1024];
@@ -81,5 +111,8 @@ int my_cat(char* pathname) {
             c++;
         }
     }
-    close(fd);
+    my_close(fd);
+    return 0; 
 }
+
+#endif

@@ -28,20 +28,20 @@ OFT oft[64];
 
 int  fd, dev;
 int  nblocks, ninodes, bmap, imap, iblk;
-char line[128], cmd[32], pathname[128], pathname2[128], old_file[128], new_file[128];
+char line[128], cmd[32], pathname[128], old_file[128], new_file[128];
 int mode, closefd; 
 char string[128];
 char src_file[128], dest_file[128];
 
 #include "cd_ls_pwd.c"
+#include "rmdir.c"
 #include "alloc_dalloc.c"
 #include "mkdir_creat.c"
-#include "rmdir.c"
+#include "read_cat.c"
 #include "link_unlink.c"
 #include "symlink.c"
 #include "open_close.c"
 #include "write_cp.c"
-#include "read_cat.c"
 
 int init()
 {
@@ -88,7 +88,7 @@ int mount_root()
 }
 
 //switch to disk2
-char *disk = "mydisk";     // change this to YOUR virtual
+char *disk = "disk2";     // change this to YOUR virtual
 
 int main(int argc, char *argv[ ])
 {
@@ -169,14 +169,20 @@ int main(int argc, char *argv[ ])
     }
        // link_file(pathname);
     else if (strcmp(cmd, "unlink")== 0)
+    {
+        sscanf(line, "%s %s", cmd, pathname);
         my_unlink(pathname);
+    }
+        //my_unlink(pathname);
     else if(strcmp(cmd, "rmdir")==0)
+    {
         my_rmdir(pathname);
-
+    }
     else if(strcmp(cmd, "symlink")==0)
     {
-      sscanf(line, "%s, %s, %s", cmd, pathname, pathname2);
-      symlink(pathname, pathname2);
+      sscanf(line, "%s %s %s", cmd, old_file, new_file);
+      printf("symlink old_file = %s newfile = %s\n", old_file, new_file);
+      symlink_file(old_file, new_file);
     }
     else if(strcmp(cmd, "open")==0)
     {
@@ -197,10 +203,10 @@ int main(int argc, char *argv[ ])
         printf("echo fd=%d text=%s\n", fd, string);
         my_write(fd, string, sizeof(string));
     }
-    // else if(strcmp(cmd, "read")==0)
-    // {
-    //     read_file();
-    // }
+    else if(strcmp(cmd, "read")==0)
+    {
+        read_file();
+    }
     else if(strcmp(cmd, "cp")==0)
     {
         sscanf(line, "%s, %s, %s", cmd, src_file, dest_file);
