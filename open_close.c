@@ -93,14 +93,36 @@ int open_file(char *pathname, int mode)
    // MINODE *minodePtr; 
     //get files minode 
     int ino = getino(pathname);
-    //if file does not exist 
-    if(ino == 0)
+
+    if(ino == -1)
     {
-        //creat first
+        char p[BLKSIZE], buf[BLKSIZE];
+        strcpy(buf, pathname);
+        strcpy(p, dirname(buf));
+        printf("p = %s\n", p);
+        int pino = getino(p);
+        if(pino == -1)
+        {
+            printf("error on finding parent\n");
+            return -1; 
+        }
+    
+
+
+    // //if file does not exist 
+    // if(ino == 0)
+    // {
+    //     //creat first
+    //     creat_file(pathname);
+    //     //then get its ino
+    //     ino = getino(pathname);
+    // }
+        MINODE *pmip = iget(dev, pino);
+
         creat_file(pathname);
-        //then get its ino
         ino = getino(pathname);
     }
+
     MINODE *mip = iget(dev, ino);
 
     //check inode imode is regular file

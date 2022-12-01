@@ -9,6 +9,7 @@ int read_file() {
     printf("Input a fd (file descriptor): \n");
     //fgets(line, 128, stdin);
     scanf("%d", &fd);
+    printf("fd entered = %d\n", fd);
     if (!is_valid_fd(fd)) {
         printf("Error: Invalid fd\n");
         return -1;
@@ -16,7 +17,9 @@ int read_file() {
     printf("Input number of bytes to read: \n");
     scanf("%d", &nbytes);
 
-    if (running->fd[fd]->mode != 0 || running->fd[fd]->mode != 2) {
+    printf("running fd mode =  %d\n", running->fd[fd]->mode);
+
+    if (running->fd[fd]->mode != 0 && running->fd[fd]->mode != 2) {
         printf("Error: fd not open for R/RW\n");
         return -1;
     }
