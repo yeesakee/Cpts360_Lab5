@@ -29,9 +29,10 @@ int read_file() {
 }
 
 int my_read(int fd, char* buf, int nbytes) {
-    printf("in my_read\n");
     OFT *oftp = running->fd[fd];
     MINODE *mip = oftp->minodePtr;
+    printf("**************************************\n");
+     printf("Enter my_read: file %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
     // byte offset in file to READ
    // int offset = running->fd[fd]->offset;
     // bytes available in file
@@ -94,18 +95,21 @@ int my_read(int fd, char* buf, int nbytes) {
         }
         //return count;
     }
+    printf("**************************************\n");
+    printf("exit my_read read %d char from file %d\n", count, fd);
     return count;
 }
 int my_cat(char* pathname) {
-    char mybuf[1024], temp[1024];
+    printf("enter cat\n");
+    char mybuf[BLKSIZE], temp[BLKSIZE];
     int n;
     strncpy(temp, pathname, 1024);
     int fd = open_file(temp, 0);
-    while (n = my_read(fd, mybuf[1024], 1024)) {
+    while (n = my_read(fd, mybuf, BLKSIZE)) {
         mybuf[n] = 0;
-        char* c = mybuf;
-        while (c != "\0") {
-            if (c == "\n") {
+        char *c = mybuf;
+        while (*c != "\0") {
+            if (*c == "\n") {
                 printf("\n");
             }
             else {
@@ -115,6 +119,7 @@ int my_cat(char* pathname) {
         }
     }
     my_close(fd);
+    printf("exit cat\n");
     return 0; 
 }
 
