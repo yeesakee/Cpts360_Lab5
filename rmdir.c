@@ -13,7 +13,6 @@ int rm_child(MINODE* pmip, char* name) {
   get_block(dev, pmip->INODE.i_block[0], buf);
   dp = (DIR *)buf;
   cp = buf;
-  printf("%s\n", name);
   while (cp < buf + BLKSIZE)
   {
      strncpy(temp, dp->name, dp->name_len);
