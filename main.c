@@ -88,7 +88,7 @@ int mount_root()
 }
 
 //switch to disk2
-char *disk = "disk2";     // change this to YOUR virtual
+char *disk = "mydisk";     // change this to YOUR virtual
 
 int main(int argc, char *argv[ ])
 {

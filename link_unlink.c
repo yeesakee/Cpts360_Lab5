@@ -58,10 +58,10 @@ int link_file(char *old_file, char *new_file)
 
    //divide pathname into dirname an dbasename
     strcpy(temp, new_file);
-    strcpy (base, basename(new_file));
+    strcpy (base, basename(temp));
     printf("basename = %s\n", base);
     strcpy(temp2, new_file);
-    strcpy(dirName, dirname(new_file));
+    strcpy(dirName, dirname(temp2));
     printf("dirname = %s\n", dirName);
 
     int nino = getino(dirName);
@@ -93,7 +93,7 @@ int my_unlink(char *pathname)
 
     //divide pathname into dirname an dbasename
     strcpy(temp, pathname);
-    strcpy (base, basename(pathname));
+    strcpy (base, basename(temp));
     printf("basename = %s\n", base);
     strcpy(temp2, pathname);
     strcpy(dirName, dirname(temp2));
@@ -119,7 +119,7 @@ int my_unlink(char *pathname)
     // printf("dirname = %s\n", dirName);
 
     //remove name entry from parent DIR data block
-    int pino = getino(base);
+    int pino = getino(dirName);
     MINODE *pmip = iget(mip->dev, pino);
 
     // //rm_child(pmip, ino, base);
@@ -128,21 +128,13 @@ int my_unlink(char *pathname)
 
     //decrement INODE link count by 1
     mip->INODE.i_links_count--;
-
-    if(mip->INODE.i_links_count > 0)
+    if(mip->INODE.i_links_count == 0)
     {
-        mip->dirty = 1; 
-    }
-    else
-    {//if links_count = 0 remove filename
-        if(mip->INODE.i_links_count == 0)
+        //deallocate all data blocks inINODE
+        //deallocate INODE; 
+        if(!S_ISLNK(mip->INODE.i_mode))
         {
-            //deallocate all data blocks inINODE
-            //deallocate INODE; 
-            if(!S_ISLNK(mip->INODE.i_mode))
-            {
-                truncate(mip);
-            }
+            truncate(mip);
         }
     }
     mip->dirty =1;
