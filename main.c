@@ -88,7 +88,7 @@ int mount_root()
 }
 
 //switch to disk2
-char *disk = "mydisk";     // change this to YOUR virtual
+char *disk = "disk2";     // change this to YOUR virtual
 
 int main(int argc, char *argv[ ])
 {
@@ -199,9 +199,7 @@ int main(int argc, char *argv[ ])
       pfd();
     else if(strcmp(cmd, "write")==0)
     {
-        sscanf(line, "%s %d %s", cmd, &fd, string);
-        printf("echo fd=%d text=%s\n", fd, string);
-        my_write(fd, string, sizeof(string));
+        write_file();
     }
     else if(strcmp(cmd, "read")==0)
     {
