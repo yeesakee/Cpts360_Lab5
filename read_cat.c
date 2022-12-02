@@ -2,7 +2,6 @@
 #define __READCAT_C__
 
 #include "open_close.c"
-
 int read_file() {
     int fd = 0;
     int nbytes = 0;
@@ -27,12 +26,11 @@ int read_file() {
     char buf[BLKSIZE];
     return my_read(fd, buf, nbytes);
 }
-
 int my_read(int fd, char* buf, int nbytes) {
     OFT *oftp = running->fd[fd];
     MINODE *mip = oftp->minodePtr;
     printf("**************************************\n");
-     printf("Enter my_read: file %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
+    printf("Enter my_read: file %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
     // byte offset in file to READ
    // int offset = running->fd[fd]->offset;
     // bytes available in file
@@ -40,6 +38,9 @@ int my_read(int fd, char* buf, int nbytes) {
     int lbk, start, blk, count = 0;
     int ibuf[BLKSIZE];
     int jbuf[BLKSIZE];
+
+    if (nbytes > avil)
+        nbytes = avil;
     while (nbytes && avil) {
         // logical block
         lbk = oftp->offset / BLKSIZE;
@@ -69,37 +70,39 @@ int my_read(int fd, char* buf, int nbytes) {
             blk = ibuf[lbk%256];
         }
 
-        char* kbuf[BLKSIZE];
+       
+        char kbuf[BLKSIZE];
         get_block(mip->dev, blk, kbuf);
         char *cp = kbuf + start;
         int remain = BLKSIZE - start;
+        char *temp_buf = buf;
         if (nbytes > remain) {
-            memcpy(buf, cp, remain);
+            memcpy(temp_buf, cp, remain);
             cp += remain;
             buf += remain;
             oftp->offset += remain;
             count += remain;
             avil -= remain;
             nbytes -= remain;
-            remain -= remain;
+            remain = 0;
         }
         else {
-            memcpy(buf, cp, nbytes);
+            memcpy(temp_buf, cp, nbytes);
             cp += nbytes;
             buf += nbytes;
             oftp->offset += nbytes;
             count += nbytes;
             avil -= nbytes;
-            nbytes -= nbytes;
             remain -= nbytes;
+            nbytes = 0;
         }
-        //return count;
     }
     printf("**************************************\n");
     printf("exit my_read read %d char from file %d\n", count, fd);
     printf("**************************************\n");
     return count;
 }
+
 int my_cat(char* pathname) {
     printf("enter cat\n");
     char mybuf[BLKSIZE], temp[BLKSIZE];
@@ -109,8 +112,8 @@ int my_cat(char* pathname) {
     while (n = my_read(fd, mybuf, BLKSIZE)) {
         mybuf[n] = 0;
         char *c = mybuf;
-        while (*c != "\0") {
-            if (*c == "\n") {
+        while (*c != '\0') {
+            if (*c == '\n') {
                 printf("\n");
             }
             else {
@@ -121,8 +124,8 @@ int my_cat(char* pathname) {
     }
     my_close(fd);
     printf("exit cat\n");
-    printf("**************************************\n");
     return 0; 
 }
+
 
 #endif

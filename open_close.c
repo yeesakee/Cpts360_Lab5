@@ -106,17 +106,6 @@ int open_file(char *pathname, int mode)
             printf("error on finding parent\n");
             return -1; 
         }
-    
-
-
-    // //if file does not exist 
-    // if(ino == 0)
-    // {
-    //     //creat first
-    //     creat_file(pathname);
-    //     //then get its ino
-    //     ino = getino(pathname);
-    // }
         MINODE *pmip = iget(dev, pino);
 
         creat_file(pathname);
@@ -228,7 +217,24 @@ int my_close(int fd)
 
 int close_file(int fd)
 {
-  return 0;
+    if(running->fd[fd] == NULL)
+    {
+        printf("error\n");
+        return -1;
+    }
+
+    OFT *oftp = running->fd[fd];
+    running->fd[fd] = 0; 
+    oftp->refCount--;
+    if(oftp->refCount > 0)
+    {
+        return 0; 
+    }
+    MINODE *mip = oftp->minodePtr;
+    mip->dirty = 1; 
+    iput(mip);
+
+    return 0;
 }
 
 //not required for level 2

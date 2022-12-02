@@ -147,7 +147,6 @@ int main(int argc, char *argv[ ])
 
     sscanf(line, "%s %s %d", cmd, pathname, &mode);
     printf("cmd=%s pathname=%s param=%d\n", cmd, pathname, mode);
-  
     if (strcmp(cmd, "ls")==0) {
       ls(pathname);
     }
@@ -199,9 +198,7 @@ int main(int argc, char *argv[ ])
       pfd();
     else if(strcmp(cmd, "write")==0)
     {
-        sscanf(line, "%s %d %s", cmd, &fd, string);
-        printf("echo fd=%d text=%s\n", fd, string);
-        my_write(fd, string, sizeof(string));
+        write_file();
     }
     else if(strcmp(cmd, "read")==0)
     {
@@ -209,7 +206,7 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "cp")==0)
     {
-        sscanf(line, "%s, %s, %s", cmd, src_file, dest_file);
+        sscanf(line, "%s %s %s", cmd, src_file, dest_file);
         my_cp(src_file, dest_file);
     }
     else if(strcmp(cmd, "cat")==0)
