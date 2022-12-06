@@ -110,18 +110,6 @@ int my_unlink(char *pathname)
         return -1; 
     }
 
-    // //divide pathname into dirname an dbasename
-    // strcpy(temp, pathname);
-    // strcpy (base, basename(pathname));
-    // printf("basename = %s\n", base);
-    // strcpy(temp2, pathname);
-    // strcpy(dirName, dirname(temp2));
-    // printf("dirname = %s\n", dirName);
-
-    //remove name entry from parent DIR data block
-    int pino = getino(dirName);
-    MINODE *pmip = iget(mip->dev, pino);
-
     // //rm_child(pmip, ino, base);
     // pmip->dirty = 1;
     // iput(pmip);
@@ -141,7 +129,9 @@ int my_unlink(char *pathname)
     //release mip
     iput(mip); 
 
-    //remove child
+    //remove name entry from parent DIR data block
+    int pino = getino(dirName);
+    MINODE *pmip = iget(mip->dev, pino);
     rm_child(pmip, base);
     return 0; 
 }

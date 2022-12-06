@@ -21,6 +21,7 @@ DIR   *dp;
 #define NPROC       2
 #define NFD         16
 #define NOFT        40
+#define NMOUNT      4
 
 
 typedef struct minode{
@@ -61,6 +62,6 @@ typedef struct mtable {
   int imap;
   int iblock;
   MINODE *mntDirPtr;
-  char DevName[64];
+  char devName[64];
   char mntName[64];
 }MTABLE;

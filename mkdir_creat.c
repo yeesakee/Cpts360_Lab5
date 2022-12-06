@@ -209,7 +209,7 @@ int make_dir(char *pathname)
     }
 
     int pino = getino(dirName);
-
+    printf("parent ino: %d\n", pino);
     if(pino == -1)
     {
         printf("error doesnt exist\n");

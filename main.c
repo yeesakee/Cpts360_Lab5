@@ -26,12 +26,13 @@ int   n;         // number of component strings
 
 OFT oft[64];
 
-int  fd, dev;
+int  fd, dev, rdev;
 int  nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128], old_file[128], new_file[128];
 int mode, closefd; 
 char string[128];
 char src_file[128], dest_file[128];
+MTABLE mountTable[NMOUNT];
 
 #include "cd_ls_pwd.c"
 #include "rmdir.c"
@@ -42,6 +43,7 @@ char src_file[128], dest_file[128];
 #include "symlink.c"
 #include "open_close.c"
 #include "write_cp.c"
+#include "mount_unmount.c"
 
 int init()
 {
@@ -88,7 +90,7 @@ int mount_root()
 }
 
 //switch to disk2
-char *disk = "mydisk";     // change this to YOUR virtual
+char *disk = "disk2";     // change this to YOUR virtual
 
 int main(int argc, char *argv[ ])
 {
@@ -101,7 +103,7 @@ int main(int argc, char *argv[ ])
     exit(1);
   }
 
-  dev = fd;    // global dev same as this fd   
+  dev = rdev = fd;    // global dev same as this fd   
 
   /********** read super block  ****************/
   get_block(dev, 1, buf);
@@ -137,7 +139,7 @@ int main(int argc, char *argv[ ])
   
   while(1){
     memset(pathname, 0, sizeof(pathname));
-    printf("input command : [ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|symlink|\n              open|close|pfd|cat|read|write] \n");
+    printf("input command : \n[ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|symlink|open|close|pfd|cat|read|write] \n");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -148,7 +150,7 @@ int main(int argc, char *argv[ ])
     sscanf(line, "%s %s %d", cmd, pathname, &mode);
     printf("cmd=%s pathname=%s param=%d\n", cmd, pathname, mode);
     if (strcmp(cmd, "ls")==0) {
-      ls(pathname);
+      my_ls(pathname);
     }
     else if (strcmp(cmd, "cd")==0)
        cd(pathname);
@@ -213,6 +215,10 @@ int main(int argc, char *argv[ ])
     else if(strcmp(cmd, "cat")==0)
     {
         my_cat(pathname);
+    }
+    else if (strcmp(cmd, "mount")== 0) {
+      sscanf(line, "%s %s %s", cmd, src_file, dest_file);
+        my_mount(src_file, dest_file);
     }
   }
 }

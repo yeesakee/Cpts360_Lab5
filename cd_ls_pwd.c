@@ -110,7 +110,7 @@ int ls_dir(MINODE *mip)
   return 0;
 }
 
-int ls(char *pathname)
+int my_ls(char *pathname)
 { 
   // if not given pathname then call ls_dir on current working directory
   printf("ls %s\n", pathname);

@@ -14,12 +14,12 @@
 extern MINODE minode[NMINODE];
 extern MINODE *root;
 extern PROC proc[NPROC], *running;
-
+extern MTABLE mountTable[NMOUNT];
 extern char gpath[128];
 extern char *name[64];
 extern int n;
 
-extern int fd, dev;
+extern int fd, dev, rdev;
 extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128];
@@ -118,7 +118,7 @@ MINODE *iget(int dev, int ino)
 
 void iput(MINODE *mip) // iput(): release a minode
 {
-   int i, block, offset, iblock;
+   int i, block, offset;
    char buf[BLKSIZE];
    INODE *ip;
 
@@ -128,10 +128,10 @@ void iput(MINODE *mip) // iput(): release a minode
    mip->refCount--; // decreases refCount by 1
 
    if (mip->refCount > 0)
-      return; // still has user
+      return -1; // still has user
    // if (!mip->dirty)       return;
    if (mip->dirty == 0)
-      return; // no need to write back
+      return -1; // no need to write back
 
    /* write INODE back to disk */
    /**************** NOTE ******************************
@@ -141,7 +141,7 @@ void iput(MINODE *mip) // iput(): release a minode
 
    Write YOUR code here to write INODE back to disk
    *****************************************************/
-   block = (mip->ino - 1) / 8 + iblock;
+   block = (mip->ino - 1) / 8 + iblk;
    offset = (mip->ino - 1) % 8;
 
    // get block containing this inode
@@ -149,8 +149,8 @@ void iput(MINODE *mip) // iput(): release a minode
    ip = (INODE *)buf + offset;      // ip points at INODE
    *ip = mip->INODE;                // copy INODE to inode in block
    put_block(mip->dev, block, buf); // write back to disk
-
-   idalloc(mip->dev, mip->ino); // mip->refCount = 0
+   return 0;
+   //idalloc(mip->dev, mip->ino); // mip->refCount = 0
 }
 
 int search(MINODE *mip, char *name)
@@ -164,7 +164,7 @@ int search(MINODE *mip, char *name)
    ip = &(mip->INODE);
 
    /*** search for name in mip's data blocks: ASSUME i_block[0] ONLY ***/
-
+   
    get_block(mip->dev, mip->INODE.i_block[0], sbuf);
    dp = (DIR *)sbuf;
    cp = sbuf;
@@ -201,17 +201,28 @@ int getino(char *pathname) // return ino of pathname
       return 2;
 
    // starting mip = root OR CWD
-   if (pathname[0] == '/')
-      mip = root;
-   else
-      mip = running->cwd;
-
-   mip->refCount++; // because we iput(mip) later
-
+   if (pathname[0] == '/') {
+      //mip = root;
+      dev = root->dev;
+      ino = root->ino;
+   }
+   else {
+      //mip = running->cwd;
+      dev = running->cwd->dev;
+      ino = running->cwd->ino;
+   }
+   mip = iget(dev, ino);
    tokenize(pathname);
 
    for (i = 0; i < n; i++)
    {
+
+      if (!S_ISDIR(mip->INODE.i_mode)) {
+         printf("not a directory\n");
+         mip->dirty = 1;
+         iput(mip);
+         return -1;
+      }
       printf("===========================================\n");
       printf("getino: i=%d name[%d]=%s\n", i, i, name[i]);
 
@@ -223,11 +234,35 @@ int getino(char *pathname) // return ino of pathname
          printf("name %s does not exist\n", name[i]);
          return 0;
       }
+      //upwards traversal. locate mount table entry
+      //using dev number. 
+      else if(ino == 2 && dev != rdev) {
+         for(int i = 0; i < NMOUNT; i++) {
+            if (mountTable[i].dev == dev) {
+               iput(mip);
+               mip = mountTable[i].mntDirPtr;
+               dev = mip->dev;
+               break;
+            }
+         }
+      }
+      else {
+         mip->dirty = 1;
+         iput(mip);
+         mip = iget(dev, ino);
+         if (mip->mounted) {
+            ino = 2;
+            MTABLE *mtp = mip->mptr;
+            dev = mtp->dev;
+            iput(mip);
+            mip = iget(dev, ino);
+         }
+      }
 
       iput(mip);
       mip = iget(dev, ino);
    }
-
+   
    iput(mip);
    return ino;
 }
