@@ -29,10 +29,6 @@ int read_file() {
 int my_read(int fd, char* buf, int nbytes) {
     OFT *oftp = running->fd[fd];
     MINODE *mip = oftp->minodePtr;
-    printf("**************************************\n");
-    printf("Enter my_read: file %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
-    // byte offset in file to READ
-   // int offset = running->fd[fd]->offset;
     // bytes available in file
     int avil = mip->INODE.i_size - oftp->offset;
     int lbk, start, blk, count = 0;
@@ -99,8 +95,6 @@ int my_read(int fd, char* buf, int nbytes) {
     }
     //printf("**************************************\n");
     //printf("Exit my_read read %d char from file %d\n", count, fd);
-    printf("exit my read\n");
-    printf("**************************************\n");
     return count;
 }
 
