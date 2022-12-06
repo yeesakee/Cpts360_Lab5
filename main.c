@@ -50,6 +50,7 @@ int init()
   int i, j;
   MINODE *mip;
   PROC   *p;
+  MTABLE *mpt;
 
   printf("init()\n");
 
@@ -80,6 +81,15 @@ int init()
     }
         
   }
+
+  for (int i = 0; i < NMOUNT; i++) {
+    mpt = &mountTable[i];
+    mpt->dev = 0;
+  }
+
+  proc[0].next = &proc[1];
+  proc[1].next = &proc[0];
+  root = NULL;
 }
 
 // load root INODE and set root pointer to it
@@ -97,6 +107,9 @@ int main(int argc, char *argv[ ])
   int ino;
   //int mode; 
   char buf[BLKSIZE];
+  if (argc > 1) {
+    disk = argv[1];
+  }
   printf("checking EXT2 FS ....");
   if ((fd = open(disk, O_RDWR)) < 0){
     printf("open %s failed\n", disk);
@@ -134,7 +147,9 @@ int main(int argc, char *argv[ ])
   running = &proc[0];
   running->cwd = iget(dev, 2);
   printf("root refCount = %d\n", root->refCount);
-
+  for (int i = 0; i < NFD; i++) {
+    running->fd[i] = NULL;
+  }
   // WRTIE code here to create P1 as a USER process
   
   while(1){
@@ -218,7 +233,12 @@ int main(int argc, char *argv[ ])
     }
     else if (strcmp(cmd, "mount")== 0) {
       sscanf(line, "%s %s %s", cmd, src_file, dest_file);
+      if (!strcmp(src_file, "")) {
+        print_mount();
+      }
+      else{
         my_mount(src_file, dest_file);
+      }
     }
   }
 }

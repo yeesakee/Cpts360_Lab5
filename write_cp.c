@@ -261,9 +261,9 @@ int my_cp(char *src_file, char *dest_file)
 
     int ino = getino(dest_copy);
     //cant find dest file need to creat it
-    if(ino == -1)
+    if(ino == 0)
     {
-        
+
         printf("need to creat dest file\n");
         creat_file(dest_file);
     }
@@ -300,4 +300,3 @@ int my_cp(char *src_file, char *dest_file)
 }
 
 #endif
-

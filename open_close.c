@@ -7,7 +7,7 @@
 
 int truncate(MINODE *mip)
 {
-    printf("in truncate\n");
+    //printf("in truncate\n");
     char buf[BLKSIZE];
     INODE *ip = &mip->INODE;
 
@@ -77,10 +77,11 @@ int truncate(MINODE *mip)
 
 int open_file(char *pathname, int mode)
 {
-   
+    //pfd();
     //0|1|2|3 for R|W|RW|APPEND
     printf("in open file\n");
     printf("mode in open file= %d\n", mode);
+
     if(pathname[0] == '/')
     {
         dev = root->dev;
@@ -92,9 +93,11 @@ int open_file(char *pathname, int mode)
 
    // MINODE *minodePtr; 
     //get files minode 
+    //pfd();
     int ino = getino(pathname);
+    //pfd();
 
-    if(ino == -1)
+    if(ino <= 0)
     {
         char p[BLKSIZE], buf[BLKSIZE];
         strcpy(buf, pathname);
@@ -113,10 +116,13 @@ int open_file(char *pathname, int mode)
         ino = getino(pathname);
     }
 
-    MINODE *mip = iget(dev, ino);
+    //pfd();
+    //name something else than mip
+    MINODE *newmip = iget(dev, ino);
+   // pfd();
 
     //check inode imode is regular file
-    if(!S_ISREG(mip->INODE.i_mode))
+    if(!S_ISREG(newmip->INODE.i_mode))
     {
         printf("error not a regular file\n");
         return -1;
@@ -125,9 +131,12 @@ int open_file(char *pathname, int mode)
     printf("mode = %d\n", mode);
     for(int i = 0; i < NFD; i++)
     {
+       // pfd();
+        printf("newmip ino = %d\n", newmip->ino);
+        //if fd is null
         if(running->fd[i] == NULL)
             break; 
-        if(running->fd[i]->minodePtr == mip)
+        if(running->fd[i]->minodePtr == newmip)
         {
             if(mode != 0)
             {
@@ -141,19 +150,22 @@ int open_file(char *pathname, int mode)
     OFT *oftp = (OFT *)malloc(sizeof(OFT)); 
     oftp->mode = mode; 
     oftp->refCount = 1; 
-    oftp->minodePtr = mip;  //point at the files minode[]
+    //malloc size of minode
+    oftp->minodePtr = (MINODE *)malloc(sizeof(MINODE));  //point at the files minode[]
+    oftp->minodePtr = newmip;
+    
 
     //depending which mode set offset 
     printf("mode : %d\n", mode);
     switch(mode){
         case 0: oftp->offset = 0;   //R: offset = 0
                 break;
-        case 1: truncate(mip);      //W: truncate file to 0 size
+        case 1: truncate(newmip);      //W: truncate file to 0 size
                 oftp->offset = 0; 
                 break;
         case 2: oftp->offset = 0;   //RW: do NOT truncate file
                 break; 
-        case 3: oftp->offset = mip->INODE.i_size; //append mode 
+        case 3: oftp->offset = newmip->INODE.i_size; //append mode 
                 break; 
         default: printf("invalid mode\n");
                  return(-1); 
@@ -176,13 +188,13 @@ int open_file(char *pathname, int mode)
     // for W|RW|APPEND mode : touch atime and mtime
     if(mode != 0)   //means it wasnt for read
     {
-        mip->INODE.i_mtime = time(NULL);
+        newmip->INODE.i_mtime = time(NULL);
     }
     //for W|RW|APPEND mode
-    mip->INODE.i_atime = time(NULL);
+    newmip->INODE.i_atime = time(NULL);
     //mark minode[] dirty 
-    mip->dirty = 1; 
-    iput(mip);
+    newmip->dirty = 1; 
+    iput(newmip);
     //return i as the file descriptor 
     printf("fd = %d\n", return_fd);
     return return_fd; 
@@ -270,7 +282,7 @@ int pfd(void)
      printf("------------------------------------\n");
     for(int i = 0; i < NFD; i++)
     {
-        if(running->fd[i] == NULL)
+        if(running == NULL || running->fd[i] == NULL)
             break;
         printf("%d    %d      %d     [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
     }

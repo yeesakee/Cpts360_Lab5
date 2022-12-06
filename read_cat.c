@@ -1,4 +1,3 @@
-
 #ifndef __READCAT_C__
 #define __READCAT_C__
 
@@ -30,6 +29,8 @@ int read_file() {
 int my_read(int fd, char* buf, int nbytes) {
     OFT *oftp = running->fd[fd];
     MINODE *mip = oftp->minodePtr;
+    printf("**************************************\n");
+    printf("Enter my_read: file %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
     // byte offset in file to READ
    // int offset = running->fd[fd]->offset;
     // bytes available in file
@@ -68,6 +69,8 @@ int my_read(int fd, char* buf, int nbytes) {
             get_block(mip->dev, blk, ibuf);
             blk = ibuf[lbk%256];
         }
+
+       
         char kbuf[BLKSIZE];
         get_block(mip->dev, blk, kbuf);
         char *cp = kbuf + start;
@@ -94,6 +97,10 @@ int my_read(int fd, char* buf, int nbytes) {
             nbytes = 0;
         }
     }
+    //printf("**************************************\n");
+    //printf("Exit my_read read %d char from file %d\n", count, fd);
+    printf("exit my read\n");
+    printf("**************************************\n");
     return count;
 }
 

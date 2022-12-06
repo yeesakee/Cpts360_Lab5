@@ -128,10 +128,10 @@ void iput(MINODE *mip) // iput(): release a minode
    mip->refCount--; // decreases refCount by 1
 
    if (mip->refCount > 0)
-      return -1; // still has user
+      return; // still has user
    // if (!mip->dirty)       return;
    if (mip->dirty == 0)
-      return -1; // no need to write back
+      return; // no need to write back
 
    /* write INODE back to disk */
    /**************** NOTE ******************************
@@ -164,7 +164,6 @@ int search(MINODE *mip, char *name)
    ip = &(mip->INODE);
 
    /*** search for name in mip's data blocks: ASSUME i_block[0] ONLY ***/
-   
    get_block(mip->dev, mip->INODE.i_block[0], sbuf);
    dp = (DIR *)sbuf;
    cp = sbuf;

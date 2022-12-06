@@ -48,7 +48,7 @@ int my_mount(char *filesys, char *mount_point)
         break;
     }
   }
-
+    printf("free mtable index: %d\n", imount);
   if(imount == -1) {
         printf("Mount limit reached\n");
         return -1;
@@ -77,6 +77,7 @@ int my_mount(char *filesys, char *mount_point)
     int ino = getino(mount_point);
     printf("dest ino: %d\n", ino);
     mip = iget(running->cwd->dev, ino);
+    printf("ino: %d\n", mip->ino);
 
     // check if it is a directory
     if (!S_ISDIR(mip->INODE.i_mode)) {
@@ -102,7 +103,7 @@ int my_mount(char *filesys, char *mount_point)
     mip->mptr = mtp;
     mtp->mntDirPtr = mip;
     printf("\n\nhere\n");
-  return 1;
+  return 0;
 }
 
 int my_umount(char *filesys)

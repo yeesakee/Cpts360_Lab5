@@ -1,6 +1,6 @@
 #ifndef __CDLSPWD_C__
 #define __CDLSPWD_C__
-
+extern int dev;
 /************* cd_ls_pwd.c file **************/
 int cd(char* pathname)
 {
