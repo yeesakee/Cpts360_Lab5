@@ -108,7 +108,8 @@ int open_file(char *pathname, int mode)
         }
         MINODE *pmip = iget(dev, pino);
 
-        creat_file(pathname);
+        // changed from creat_file//////////////
+        my_creat(pmip, pathname);
         ino = getino(pathname);
     }
 
@@ -121,6 +122,7 @@ int open_file(char *pathname, int mode)
         return -1;
     }
     //check whether file is already opened with incompatible mode:
+    printf("mode = %d\n", mode);
     for(int i = 0; i < NFD; i++)
     {
         if(running->fd[i] == NULL)
@@ -207,7 +209,7 @@ int my_close(int fd)
         return 0; 
     }
     printf("close: refcount = %d\n", oftp->refCount);
-    
+    printf("fd = %d is closed\n", fd);
     MINODE *mip = oftp->minodePtr;
     mip->dirty = 1; 
     iput(mip);
@@ -265,11 +267,12 @@ int pfd(void)
 {
     //display currently opened files
      printf("fd  mode  offset    INODE\n");
+     printf("------------------------------------\n");
     for(int i = 0; i < NFD; i++)
     {
         if(running->fd[i] == NULL)
             break;
-        printf("%d  %s    %d     [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
+        printf("%d    %d      %d     [%d, %d]\n", i, running->fd[i]->mode, running->fd[i]->offset, running->fd[i]->minodePtr->dev, running->fd[i]->minodePtr->ino);
     }
     return 0;
 }
