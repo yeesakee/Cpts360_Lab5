@@ -7,7 +7,6 @@
 
 int write_file()
 {
-    printf("HERE\n\n");
     int fd = 0;
     int nbytes = 0;
     char wbuf[BLKSIZE] = { 0 };

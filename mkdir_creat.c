@@ -11,6 +11,7 @@ char base[100];
 char temp[100];
 char temp2[100];
 char buf[BLKSIZE];
+extern dev;
 
 //enters a [ino, name] as a new dir entry into a parent directory
 int enter_name(MINODE *pip, int ino, char *name)
@@ -116,6 +117,7 @@ int my_mkdir(MINODE *pmip, char *name)
 
     //allocate an INODE and a disk block
     int ino = ialloc(dev);
+    printf("\n\n INODE:%d\n\n", ino);
     int blk = balloc(dev);
 
     //load INODE into a minode
@@ -142,6 +144,7 @@ int my_mkdir(MINODE *pmip, char *name)
     //write INODE back to disk 
     iput(mip);
 
+    //bzero(buf, BLKSIZE);
 
     get_block(dev, blk, buf);
     dp = (DIR *)buf;
@@ -185,9 +188,6 @@ int my_mkdir(MINODE *pmip, char *name)
 
 int make_dir(char *pathname)
 {
-    //printf("in make_dir\n");
-    //int pino;
-    //MINODE *pmip;
     MINODE *start; 
     //divide pathname into dirname an dbasename
     strcpy(temp, pathname);
@@ -262,7 +262,7 @@ int my_creat(MINODE *pip, char *name)
     ip->i_uid = running->uid;
     ip->i_gid = running->gid;
     //file size is 0 
-    ip->i_size = 0;
+    ip->i_size = BLKSIZE;
     // link count is 1
     ip->i_links_count = 1;  
     ip->i_atime = ip->i_ctime = ip->i_mtime = time(0L);

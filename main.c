@@ -59,22 +59,22 @@ int init()
     mip->mptr = 0;
   }
 
-  //initialize ofts as free
-  for( i = 0; i<NOFT; i++)
-  {
-      oft[i].refCount = 0; 
-  }
+  // //initialize ofts as free
+  // for( i = 0; i<NOFT; i++)
+  // {
+  //     oft[i].refCount = 0; 
+  // }
 
   //initialize PROCS
   for (i=0; i<NPROC; i++){
     p = &proc[i];
-    p->pid = i+1;           // pid = 1, 2
-    p->uid = p->gid = 0;    // uid = 0: SUPER user
+    p->pid = i;           // pid = 1, 2
+    p->uid = p->gid = i;    // uid = 0: SUPER user
     p->cwd = 0;             // CWD of process
     for(int j = 0; j < NFD; j++)
     {
         //fd[] of every proc = 0
-        proc[i].fd[j] = 0; //all file descriptors are null 
+        p->fd[j] = 0; //all file descriptors are null 
     }
         
   }
@@ -88,7 +88,7 @@ int mount_root()
 }
 
 //switch to disk2
-char *disk = "disk2";     // change this to YOUR virtual
+char *disk = "mydisk";     // change this to YOUR virtual
 
 int main(int argc, char *argv[ ])
 {
@@ -147,7 +147,6 @@ int main(int argc, char *argv[ ])
 
     sscanf(line, "%s %s %d", cmd, pathname, &mode);
     printf("cmd=%s pathname=%s param=%d\n", cmd, pathname, mode);
-  
     if (strcmp(cmd, "ls")==0) {
       ls(pathname);
     }
@@ -207,7 +206,7 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "cp")==0)
     {
-        sscanf(line, "%s, %s, %s", cmd, src_file, dest_file);
+        sscanf(line, "%s %s %s", cmd, src_file, dest_file);
         my_cp(src_file, dest_file);
     }
     else if(strcmp(cmd, "cat")==0)

@@ -1,14 +1,12 @@
 
-int tst_bit(char *buf, int bit) // in Chapter 11.3.1
-{
-    return buf[bit/8] & (1 << (bit % 8));
+extern ninodes;
+int tst_bit(char *buf, int bit) {
+  return buf[bit/8] & (1 << (bit%8));
 }
 
-int set_bit(char *buf, int bit) // in Chapter 11.3.1
-{
-    buf[bit/8] |= (1 << (bit % 8));
+int set_bit(char *buf, int bit) {
+  buf[bit/8] |= (1 << bit % 8);
 }
-
 int clr_bit(char *buf, int bit) //clear bit in char 
 {
     buf[bit/8] &= ~(1 << (bit % 8));
@@ -29,29 +27,20 @@ int decFreeInodes(int dev)
   put_block(dev, 2, buf);
 }
 
-int ialloc(int dev)  // allocate an inode number from inode_bitmap
-{
-  int  i;
+int ialloc(int dev) {
   char buf[BLKSIZE];
 
-  //use imap, ninodes in mount table of dev
-  //MTABLE *mp = (MTABLE *)get_mtable(dev);
-
-  // read inode_bitmap block
   get_block(dev, imap, buf);
-
-  for (i=0; i < ninodes; i++){ // use ninodes from SUPER block
-    if (tst_bit(buf, i)==0){
-        set_bit(buf, i);
-	put_block(dev, imap, buf);
-
-	decFreeInodes(dev);
-
-	printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
-        return i+1;
+  for (int i = 0; i < ninodes; i++) {
+    if(tst_bit(buf, i)==0) {
+      printf("NINODES: %d", ninodes);
+      set_bit(buf, i);
+      put_block(dev, imap, buf);
+      decFreeInodes(dev);
+      printf("allocated ino=%d\n", i+1);
+      return (i+1);
     }
   }
-  return 0;
 }
 
 // WRITE YOUR OWN balloc(dev) function, which allocates a FREE disk block number

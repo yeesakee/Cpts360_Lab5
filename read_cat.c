@@ -3,7 +3,6 @@
 #define __READCAT_C__
 
 #include "open_close.c"
-
 int read_file() {
     int fd = 0;
     int nbytes = 0;
@@ -69,7 +68,6 @@ int my_read(int fd, char* buf, int nbytes) {
             get_block(mip->dev, blk, ibuf);
             blk = ibuf[lbk%256];
         }
-
         char kbuf[BLKSIZE];
         get_block(mip->dev, blk, kbuf);
         char *cp = kbuf + start;
@@ -98,6 +96,7 @@ int my_read(int fd, char* buf, int nbytes) {
     }
     return count;
 }
+
 int my_cat(char* pathname) {
     printf("enter cat\n");
     char mybuf[BLKSIZE], temp[BLKSIZE];
@@ -121,5 +120,6 @@ int my_cat(char* pathname) {
     printf("exit cat\n");
     return 0; 
 }
+
 
 #endif
