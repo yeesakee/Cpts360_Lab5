@@ -36,6 +36,7 @@ int write_file()
 
 int my_write(int fd, char *buf, int nbytes)
 {
+    printf("NBYTES = %d\n", nbytes);
     char ibuf[BLKSIZE];
    // char writebuf[BLKSIZE] = { 0 };
     char dbuf[BLKSIZE];
@@ -166,17 +167,18 @@ int my_write(int fd, char *buf, int nbytes)
             }
         }
 
+        //all cases come to here to write data to a block
         char writebuf[BLKSIZE];
-        get_block(mip->dev, blk, writebuf);
-        char *cp = writebuf + startByte;
-        int remain = BLKSIZE - startByte;
-        char *temp_buf = buf;
+        get_block(mip->dev, blk, writebuf); //read disk blok into wbuf[]
+        char *cp = writebuf + startByte;    //cp points at stratbyte in wbuf[]
+        int remain = BLKSIZE - startByte;   //number of bytes remain in this block
+        char *cq = buf;
 
         if(nbytes > remain)
         {
-            memcpy(temp_buf, cp, remain);
-            cp += remain;
-            buf += remain;
+            //memcpy(temp_buf, cp, remain);
+            *cp += remain;
+            *cq += remain;
             oftp->offset += remain;
             numBytes += remain;
             nbytes -= remain;
@@ -184,24 +186,42 @@ int my_write(int fd, char *buf, int nbytes)
         }
         else
         {
-            memcpy(temp_buf, cp, nbytes);
-            cp += nbytes; 
-            buf += nbytes;
+           // memcpy(temp_buf, cp, nbytes);
+            *cp += nbytes; 
+            *cq += nbytes;
             oftp->offset += nbytes;
             numBytes += nbytes;
             remain -= nbytes;
             nbytes = 0; 
         }
 
+        // while(remain > 0)
+        // {
+        //     *cp++ = *cq++; 
+        //     nbytes--;
+        //     remain--;
+        //      if(oftp->offset > mip->INODE.i_size)
+        //     {
+        //         mip->INODE.i_size++;        //increase file size if offset larger than filesize
+        //         //mip->INODE.i_size = oftp->offset;
+        //     }
+        //     if(nbytes <= 0)
+        //         break;
+
+        // }
+
         if(oftp->offset > mip->INODE.i_size)
         {
-            mip->INODE.i_size = oftp->offset;
+            mip->INODE.i_size = oftp->offset;        //increase file size if offset larger than filesize
+            //mip->INODE.i_size = oftp->offset;
         }
-        put_block(mip->dev, blk, writebuf);
+        
+        put_block(mip->dev, blk, writebuf); //write wbuf[] to disk
     }
     mip->dirty = 1; 
     printf("**************************************\n");
     printf("wrote %d char into file fd = %d\n", numBytes, fd);
+    printf("file fd = %d size = %d offset = %d\n", fd, mip->INODE.i_size, oftp->offset);
     printf("End my_write\n");
     printf("**************************************\n");
     return numBytes;
@@ -211,41 +231,45 @@ int my_cp(char *src_file, char *dest_file)
 {
     printf("enter cp\n");
     printf("src file name: %s dest file name: %s\n", src_file, dest_file);
+  
     int n = 0; 
     char buf[BLKSIZE];
 
-     if(src_file[0] == '/')
-    {
-        dev = root->dev;
-    }
-    else
-    {
-        dev = running->cwd->dev;
-    }
+    //  if(src_file[0] == '/')
+    // {
+    //     dev = root->dev;
+    // }
+    // else
+    // {
+    //     dev = running->cwd->dev;
+    // }
 
     //open source file for read
     int fd_src = open_file(src_file, 0);
+    printf("fd src file = %d\n", fd_src);
 
-     if(dest_file[0] == '/')
-    {
-        dev = root->dev;
-    }
-    else
-    {
-        dev = running->cwd->dev;
-    }
+    //  if(dest_file[0] == '/')
+    // {
+    //     dev = root->dev;
+    // }
+    // else
+    // {
+    //     dev = running->cwd->dev;
+    // }
     char dest_copy[100];
     strcpy(dest_copy, dest_file);
 
     int ino = getino(dest_copy);
     //cant find dest file need to creat it
-    if(ino == 0)
+    if(ino == -1)
     {
+        
         printf("need to creat dest file\n");
         creat_file(dest_file);
     }
     //open destination file for read write
     int fd_dest = open_file(dest_file, 2);
+    printf("fd dest file = %d\n", fd_dest);
 
     if(fd_src == -1 || fd_dest == -1)
     {
@@ -260,12 +284,12 @@ int my_cp(char *src_file, char *dest_file)
         return -1;
     }
 
-    memset(buf, '\0', BLKSIZE);
+    //memset(buf, '\0', BLKSIZE);
     while(n = my_read(fd_src, buf, BLKSIZE))
     {
         buf[n] = 0;
         my_write(fd_dest, buf, n);
-        memset(buf, '\0', BLKSIZE);
+        //memset(buf, '\0', BLKSIZE);
     }
 
     close_file(fd_src);

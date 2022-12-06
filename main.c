@@ -137,7 +137,7 @@ int main(int argc, char *argv[ ])
   
   while(1){
     memset(pathname, 0, sizeof(pathname));
-    printf("input command : [ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|symlink|\n open|close|pfd|cat|read|write] \n");
+    printf("input command : [ls|cd|pwd|quit|mkdir|creat|rmdir|link|unlink|symlink|\n              open|close|pfd|cat|read|write] \n");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -185,14 +185,15 @@ int main(int argc, char *argv[ ])
     }
     else if(strcmp(cmd, "open")==0)
     {
+      //sscanf(line, "%s %s %d", cmd, pathname, mode);
       printf("mode : %d\n", mode);
       open_file(pathname, mode);
     }
     else if(strcmp(cmd, "close")==0)
     {
       //int fd = -1; 
-      sscanf(line, "%s, %d", cmd, closefd);
-      my_close(closefd);
+      sscanf(line, "%s %d", cmd, &fd);
+      my_close(fd);
     }
     else if(strcmp(cmd, "pfd")==0)
       pfd();
